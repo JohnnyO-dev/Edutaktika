@@ -8,8 +8,8 @@ package-lock.json
 # Build output (Netlify will build; uncomment to exclude deploy folder)
 # deploy/
 
-# Editor build output if ever committed
-Editor/dist/
+# Editor build output (now tracked for direct Netlify access)
+# (If you want to stop tracking later, re-add: Editor/dist/ )
 
 # Local environment / secrets
 .env

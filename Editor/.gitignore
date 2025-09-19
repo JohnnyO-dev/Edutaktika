@@ -9,9 +9,9 @@
 /coverage
 *.provisionprofile
 
-# production
+# production (keeping build ignored; allowing dist to be committed for hosting)
 /build
-/dist
+# /dist (unignored to ship pre-built editor)
 
 # misc
 .DS_Store
