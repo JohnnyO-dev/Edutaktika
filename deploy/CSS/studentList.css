@@ -1,0 +1,244 @@
+:root {
+        --primary: #2e8b57;
+        --secondary: #ffd700;
+        --accent: #ff69b4;
+        --background: #f0f8ff;
+        --card-bg: #ffffff;
+        --text-main: #22223b;
+        --text-light: #9a8c98;
+        --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+        --radius: 18px;
+    }
+    body {
+        font-family: 'Baloo 2', Arial, sans-serif;
+        margin: 0;
+        background: #f7f9fb;
+        padding: 0;
+        color: var(--forest-green);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        
+    }
+    /* Student Navigation Tabs */
+.student-nav {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 32px 0 24px 0;
+}
+
+.student-tab {
+    background: #e0ffe6;
+    color: #2e8b57;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 18px 18px 0 0;
+    padding: 12px 32px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #2e8b5722;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    outline: none;
+}
+
+.student-tab.active, .student-tab:hover {
+    background: #ffd700;
+    color: #3f4d34;
+    transform: translateY(-4px) scale(1.04);
+}
+    .student-section { display: none; }
+    .student-section.active { display: block; }
+    .filters-form {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+    }
+    #list-selected-filters, #scoring-selected-filters {
+        text-align: center;
+        margin-bottom: 12px;
+        font-weight: bold;
+        color: var(--forest-green);
+    }
+    /* Stat Boxes */
+.scoring-stats {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.stat-box {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px #2e8b5722;
+    padding: 18px 28px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3f4d34;
+    text-align: center;
+    min-width: 110px;
+    transition: transform 0.18s, box-shadow 0.18s;
+    position: relative;
+}
+
+.stat-box:hover {
+    transform: scale(1.06) rotate(-2deg);
+    box-shadow: 0 4px 18px #ffd70044;
+    background: #fffbe6;
+}
+
+.stat-box i {
+    font-size: 1.3em;
+    margin-bottom: 4px;
+    color: #ff69b4;
+}
+
+.stat-box span {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+.minimal-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: 18px;
+    background: transparent;
+}
+
+.minimal-table th, .minimal-table td {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 1.05rem;
+    color: #3f4d34;
+}
+
+.minimal-table th {
+    background: #f8caea;
+    color: #2e8b57;
+    font-weight: 700;
+    border-bottom: 2px solid #ffd70044;
+}
+
+.minimal-table thead tr th {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    border-bottom: 2px solid var(--secondary);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.minimal-table tr:hover td {
+    background: #fffbe6;
+    color: #2e8b57;
+    transition: background 0.2s, color 0.2s;
+}
+
+.minimal-table tbody tr:nth-child(even) td {
+    background: #f7f9fb;
+}
+
+.mini-btn {
+    background: #ffb6b9;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    margin: 0 2px;
+}
+
+.mini-btn.remove:hover {
+    background: #ff4f4f;
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.filters-form {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.filters-form select {
+    background: #fffbe6;
+    border: 1.5px solid #2e8b57;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 1rem;
+    color: #2e8b57;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px #2e8b5711;
+}
+
+.filters-form select:focus {
+    border: 2px solid #ffd700;
+    background: #fff;
+    box-shadow: 0 2px 12px #ffd70022;
+}
+
+.filters-form option {
+    background: #fff;
+    color: #2e8b57;
+    font-size: 1rem;
+}
+
+/* Make table scrollable */
+#listSection, #student-2 {
+    max-height: 420px;
+    overflow-y: auto;
+    margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+    .scoring-stats {
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+    }
+    .filters-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .student-nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0 4vw;
+    }
+    .minimal-table th, .minimal-table td {
+        font-size: 0.95rem;
+        padding: 8px 6px;
+    }
+    .stat-box {
+        padding: 12px 10px;
+        min-width: 80px;
+    }
+}

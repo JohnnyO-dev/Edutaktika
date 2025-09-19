@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lesson Editor | Eduktaktaktika</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            background: #f0f1f5;
+        }
+        body {
+            min-height: 100vh;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: #f0f1f5;
+        }
+        .breadcrumbs {
+            width: 100vw;
+            left: 0;
+            top: 0;
+            position: relative;
+            box-sizing: border-box;
+            padding: 11px 24px;
+            color: #888;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 18px;
+            background: rgb(190, 201, 247);
+            z-index: 2;
+            margin: 0;
+        }
+        .right-breadcrumb-btns {
+            margin-left: auto;
+            margin-right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .right-breadcrumb-btns button {
+            background: #388e3c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 18px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+        .right-breadcrumb-btns button#present-btn {
+            background: #b39ddb;
+        }
+        .right-breadcrumb-btns button:hover {
+            background: #232946;
+        }
+        .editor-layout {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 64px);
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .main-area {
+            display: flex;
+            flex: 1 1 auto;
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .sidebar {
+            min-width: 240px;
+            width: 240px;
+            max-width: 320px;
+            height: 100%;
+            overflow-y: auto;
+            background: #f4f8ff; border-right: 1px solid #e0e0e0; padding: 24px 12px; display: flex; flex-direction: column; gap: 32px;
+            z-index: 1;
+        }
+        .sidebar h4 { margin: 0 0 18px 0; color:rgb(0, 0, 0); font-size: 1.1rem; }
+        .sidebar-group { margin-bottom: 18px; }
+        .sidebar-label { font-size: 1rem; color:rgb(0, 0, 0); margin-bottom: 7px; }
+        .sidebar button, .sidebar input[type="file"] {
+            display: block; width: 100%; margin-bottom: 7px; padding: 7px 0; border: none; border-radius: 6px; background: #fff; color: #232946; cursor: pointer; font-size: 1rem;
+            transition: background 0.15s;
+        }
+        .sidebar button:hover { background: #e3f0ff; }
+        .sidebar .shape-btn { font-size: 1.4rem; width: 40px; display: inline-block; margin-right: 6px; }
+        .editor-content {
+            flex: 1 1 auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 24px;
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+            background: #f0f1f5;
+        }
+        .canvas-area {
+            padding: 16px;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 auto;
+            overflow: hidden;
+            margin-left: 20px;
+            margin-top: 20px;
+        }
+        .canvas-wrapper {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            aspect-ratio: 16/9;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        #canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .rightbar {
+            width: 240px;
+            min-width: 160px;
+            max-width: 320px;
+            background: #fff;
+            border-left: 1px solid #e0e0e0;
+            padding: 16px 8px;
+            border-radius: 0 18px 18px 0;
+            box-shadow: 0 2px 8px #e0e0e055;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-height: 0;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .rightbar label { font-weight: 600; color: #232946; margin-bottom: 6px; display: block; }
+        .rightbar .position-btns, .rightbar .layer-btns, .rightbar .text-btns, .rightbar .align-btns {
+            display: flex; gap: 6px; margin-bottom: 10px;
+        }
+        .rightbar button, .rightbar select, .rightbar input[type="number"] {
+            border: 1px solid #e0e0e0; border-radius: 5px; background: #f4f8ff; padding: 6px 10px; font-size: 1rem; cursor: pointer;
+        }
+        .rightbar button.selected, .rightbar button:focus { background: #e3f0ff; }
+        .rightbar .color-btn { width: 24px; height: 24px; border-radius: 4px; border: none; background: #388e3c; }
+        .undo-redo-bar { display: flex; gap: 12px; margin: 18px 0 0 0; }
+        .undo-redo-bar button { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 7px 18px; cursor: pointer; font-weight: 600; }
+        .undo-redo-bar button:hover { background: #e3f0ff; }
+        @media (max-width: 1200px) {
+            .sidebar, .rightbar { width: 180px; min-width: 140px; }
+        }
+        @media (max-width: 900px) {
+            .editor-layout { flex-direction: column; height: auto; }
+            .sidebar, .rightbar {
+                width: 100vw;
+                min-width: 0;
+                max-width: 100vw;
+                position: static;
+                height: auto;
+            }
+            .main-area {
+                flex-direction: column;
+            }
+            .editor-content { flex-direction: column; align-items: stretch; gap: 12px; }
+            .canvas-area { max-width: 100vw; }
+            .canvas { max-width: 98vw; max-height: 40vw; }
+        }
+        @media (max-width: 600px) {
+            .canvas { max-width: 100vw; max-height: 56vw; }
+            .sidebar, .rightbar { padding: 8px 2px; }
+        }
+    </style>
+</head>
+<body>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+    // Add this before your main script logic
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+        authDomain: "edutaktika.firebaseapp.com",
+        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+        projectId: "edutaktika",
+        storageBucket: "edutaktika.appspot.com",
+        messagingSenderId: "676848575316",
+        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+        measurementId: "G-X3GT5TNN87"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+</script>
+
+
+
+    <div class="breadcrumbs">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button id="burger-menu-btn" style="background:none;border:none;padding:0 10px 0 0;cursor:pointer;font-size:1.7rem;color:#232946;outline:none;">
+                <i class="fa fa-bars"></i>
+            </button>
+            <span class="logo" style="font-weight:bold;font-size:1.2rem;">Eduktaktaktika</span>
+        </div>
+        <span class="right-breadcrumb-btns">
+            <button id="save-btn"><i class="fa fa-save"></i> Save</button>
+            <button id="export-btn"><i class="fa fa-download"></i> Export</button>
+            <button id="import-btn"><i class="fa fa-upload"></i> Import</button>
+            <button id="present-btn"><i class="fa fa-play"></i> Present</button>
+        </span>
+        <div id="burger-dropdown" style="display:none;position:absolute;top:54px;left:16px;min-width:160px;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:10px 0;z-index:100;">
+            <a href="#" id="burger-export" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;"><i class="fa fa-download"></i> Export</a>
+            <a href="#" id="burger-import" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;"><i class="fa fa-upload"></i> Import</a>
+            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">Home</a>
+            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">My Presentations</a>
+            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">Settings</a>
+        </div>
+    </div>
+
+    <script>
+    // Burger menu Export/Import logic
+    document.getElementById('burger-export').onclick = function(e) {
+        e.preventDefault();
+        document.getElementById('export-btn').click();
+        document.getElementById('burger-dropdown').style.display = 'none';
+    };
+    document.getElementById('burger-import').onclick = function(e) {
+        e.preventDefault();
+        document.getElementById('import-btn').click();
+        document.getElementById('burger-dropdown').style.display = 'none';
+    };
+    // Burger menu dropdown logic
+    const burgerBtn = document.getElementById('burger-menu-btn');
+    const burgerDropdown = document.getElementById('burger-dropdown');
+    burgerBtn.addEventListener('click', function(e) {
+        burgerDropdown.style.display = burgerDropdown.style.display === 'none' || burgerDropdown.style.display === '' ? 'block' : 'none';
+        e.stopPropagation();
+    });
+    document.addEventListener('click', function(e) {
+        if (burgerDropdown.style.display === 'block' && !burgerDropdown.contains(e.target) && e.target !== burgerBtn) {
+            burgerDropdown.style.display = 'none';
+        }
+    });
+    </script>
+
+    <div class="editor-layout">
+        <div class="main-area">
+            <aside class="sidebar">
+                <div class="sidebar-group">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <h4 class="sidebar-label" style="margin-bottom:0;">Templates</h4>
+                        <p id="see-all-elements-btn" style="font-size:0.95em;cursor:pointer;">See all</p>
+                    </div>
+                    <div class="elements-library-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+                    <input type="file" id="element-upload" accept="image/*,.json" style="margin-top:10px;" />
+                    <button id="upload-element-btn">Upload Element</button>
+                </div>
+                <div class="sidebar-group">
+                    <div class="sidebar-label">Text</div>
+                    <button class="add-headline">Headline</button>
+                    <button class="add-body">Body Text</button>
+                </div>
+                <div class="sidebar-group">
+                    <div class="sidebar-label">Images</div>
+                    <button class="upload-img">Upload</button>
+                    <button class="img-url">From URL</button>
+                </div>
+                <div class="sidebar-group">
+                    <div class="sidebar-label">Shapes</div>
+                    <button class="shape-btn" data-shape="rect">■</button>
+                    <button class="shape-btn" data-shape="rounded-rect">▭</button>
+                    <button class="shape-btn" data-shape="rounded-square">⬛</button>
+                    <button class="shape-btn" data-shape="circle">●</button>
+                    <button class="shape-btn" data-shape="ellipse">⬭</button>
+                    <button class="shape-btn" data-shape="star">★</button>
+                    <button class="shape-btn" data-shape="triangle">▲</button>
+                    <button class="shape-btn" data-shape="pentagon">⬟</button>
+                    <button class="shape-btn" data-shape="hexagon">⬢</button>
+                    <button class="shape-btn" data-shape="line">/</button>
+                    <button class="shape-btn" data-shape="arrow">➔</button>
+                </div>
+                <div class="sidebar-group">
+                    <div class="sidebar-label">Background</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+                        <input type="color" class="bg-color-input" title="Background Color" style="width:28px;height:28px;border:none;background:none;padding:0;">
+                        <input type="text" class="bg-color-text" value="#fff" style="width:70px;font-size:1rem;padding:4px 6px;border-radius:4px;border:1px solid #ccc;">
+                    </div>
+                    <button class="bg-url">From URL</button>
+                </div>
+            </aside>
+            <div class="editor-content">
+                <div class="canvas-area">
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+                <aside class="rightbar">
+                    <label>Position</label>
+                    <div class="position-btns">
+                        <button title="Align Left"><i class="fa fa-align-left"></i></button>
+                        <button title="Align Center"><i class="fa fa-align-center"></i></button>
+                        <button title="Align Right"><i class="fa fa-align-right"></i></button>
+                        <button title="Align Top"><i class="fa fa-arrow-up"></i></button>
+                        <button title="Align Middle"><i class="fa fa-arrows-alt-v"></i></button>
+                        <button title="Align Bottom"><i class="fa fa-arrow-down"></i></button>
+                    </div>
+                    <label>Layer</label>
+                    <div class="layer-btns">
+                        <button title="Send Backward"><i class="fa fa-arrow-down"></i></button>
+                        <button title="Bring Forward"><i class="fa fa-arrow-up"></i></button>
+                        <button title="Delete"><i class="fa fa-trash"></i></button>
+                    </div>
+                    <label>Text</label>
+                    <div>
+                        <select class="font-family">
+                            <option>Inter</option>
+                            <option>Arial</option>
+                            <option>Times</option>
+                        </select>
+                        <input type="number" class="font-size" value="24" min="8" max="120" style="width:50px;">
+                    </div>
+                    <div class="text-btns">
+                        <button class="bold-btn"><b>B</b></button>
+                        <button class="italic-btn"><i>I</i></button>
+                        <button class="underline-btn"><u>U</u></button>
+                        <input type="color" class="color-input" title="Text Color" style="width:28px; height:28px; border:none; background:none; padding:0; margin-right:4px; display:none;">
+                        <input type="color" class="shape-color-input" title="Shape Color" style="width:28px; height:28px; border:none; background:none; padding:0; display:none;">
+                    </div>
+                    <div class="align-btns">
+                        <button class="align-left"><i class="fa fa-align-left"></i></button>
+                        <button class="align-center"><i class="fa fa-align-center"></i></button>
+                        <button class="align-right"><i class="fa fa-align-right"></i></button>
+                        <button class="align-justify"><i class="fa fa-align-justify"></i></button>
+                    </div>
+                    <div class="undo-redo-bar" style="margin-top:24px;">
+                        <button id="undo-btn"><i class="fa fa-undo"></i> Undo</button>
+                        <button id="redo-btn"><i class="fa fa-redo"></i> Redo</button>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+document.getElementById('upload-element-btn').onclick = function() {
+    const input = document.getElementById('element-upload');
+    const file = input.files[0];
+    if (!file) return alert('Choose a file!');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // For images, store as dataURL; for JSON, store as is
+        let type = file.type.startsWith('image/') ? 'image' : 'json';
+        let data = e.target.result;
+        if (type === 'json') {
+            try { data = JSON.parse(data); } catch { return alert('Invalid JSON'); }
+        }
+        db.ref('elements').push({
+            type,
+            data,
+            name: file.name,
+            uploaded: Date.now()
+        }, () => alert('Element uploaded!'));
+    };
+    reader.readAsDataURL(file);
+};
+
+    function showElementsLibrary() {
+        const list = document.querySelector('.elements-library-list');
+        list.innerHTML = '';
+        db.ref('elements').orderByChild('uploaded').limitToLast(3).once('value', snap => {
+            snap.forEach(child => {
+                const el = child.val();
+                const btn = document.createElement('div');
+                btn.style = 'width:60px;height:54px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+                if (el.type === 'image') {
+                    btn.innerHTML = `<img src="${el.data}" style="max-width:60px;max-height:54px;">`;
+                } else if (el.type === 'json') {
+                    btn.innerHTML = `<span style="font-size:2rem;">🧩</span>`;
+                }
+                btn.title = el.name;
+                btn.onclick = function() {
+                    if (el.type === 'image') {
+                        fabric.Image.fromURL(el.data, function(img) {
+                            img.set({ left: 100, top: 100, scaleX: 0.5, scaleY: 0.5 });
+                            canvas.add(img);
+                            canvas.setActiveObject(img);
+                            canvas.requestRenderAll();
+                        });
+                    } else if (el.type === 'json') {
+                        fabric.util.enlivenObjects([el.data], function(objects) {
+                            if (objects[0]) {
+                                objects[0].set({ left: 100, top: 100 });
+                                canvas.add(objects[0]);
+                                canvas.setActiveObject(objects[0]);
+                                canvas.requestRenderAll();
+                            }
+                        });
+                    }
+                };
+                list.appendChild(btn);
+            });
+        });
+    }
+    showElementsLibrary();
+
+    // See All Elements Modal (shows all images from 'elements' node)
+    function showAllElementsModal() {
+        db.ref('elements').orderByChild('uploaded').once('value', snap => {
+            const elements = [];
+            snap.forEach(child => {
+                const val = child.val();
+                // Only include images
+                if (val.type === 'image') {
+                    elements.push({ key: child.key, ...val });
+                }
+            });
+            elements.reverse(); // Show most recent first
+            // Modal HTML
+            let modal = document.getElementById('allElementsModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'allElementsModal';
+                modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;display:flex;align-items:center;justify-content:center;';
+                modal.innerHTML = `
+                    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:600px;width:96vw;max-height:90vh;overflow:auto;box-shadow:0 4px 24px #0002;position:relative;">
+                        <h3 style="margin-top:0;margin-bottom:18px;">All Images</h3>
+                        <div id="allElementsList" style="display:flex;flex-wrap:wrap;gap:12px;"></div>
+                        <button id="closeAllElementsModal" style="position:absolute;top:10px;right:18px;background:#eee;color:#232946;border:none;padding:6px 18px;border-radius:8px;cursor:pointer;">Close</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('closeAllElementsModal').onclick = function() {
+                    modal.style.display = 'none';
+                };
+            }
+            // Render images in the modal
+            const listDiv = modal.querySelector('#allElementsList');
+            listDiv.innerHTML = '';
+            elements.forEach(el => {
+                const btn = document.createElement('div');
+                btn.style = 'width:60px;height:54px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+                btn.innerHTML = `<img src="${el.data}" style="max-width:60px;max-height:54px;">`;
+                btn.title = el.name;
+                btn.onclick = function() {
+                    fabric.Image.fromURL(el.data, function(img) {
+                        img.set({ left: 100, top: 100, scaleX: 0.5, scaleY: 0.5 });
+                        canvas.add(img);
+                        canvas.setActiveObject(img);
+                        canvas.requestRenderAll();
+                    });
+                    modal.style.display = 'none';
+                };
+                listDiv.appendChild(btn);
+            });
+            modal.style.display = 'flex';
+        });
+    }
+    document.getElementById('see-all-elements-btn').onclick = showAllElementsModal;
+    
+</script>
+    
+    <script>
+   
+// Helper to get URL parameters
+function getParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+}
+// Initialize Fabric.js canvas
+const canvas = new fabric.Canvas('canvas', {
+    backgroundColor: '#fff',
+    width: 1100,
+    height: 600
+});
+        // Responsive canvas
+        function resizeCanvas() {
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            canvas.setWidth(rect.width);
+            canvas.setHeight(rect.height);
+            canvas.calcOffset && canvas.calcOffset();
+            canvas.renderAll();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        // Add text
+        function addText(type) {
+            const text = new fabric.IText(type === 'headline' ? 'Headline' : 'Body Text', {
+                left: 100,
+                top: 100,
+                fontSize: type === 'headline' ? 36 : 24,
+                fontFamily: 'Inter',
+                fill: '#232946',
+                fontWeight: type === 'headline' ? 'bold' : 'normal',
+                underline: false
+            });
+            canvas.add(text).setActiveObject(text);
+        }
+        // Add shape
+        function addShape(shape) {
+            let obj;
+            switch(shape) {
+                case 'rect':
+                    obj = new fabric.Rect({ left: 150, top: 150, width: 120, height: 80, fill: '#b39ddb', rx: 0, ry: 0 });
+                    break;
+                case 'rounded-rect':
+                    obj = new fabric.Rect({ left: 180, top: 180, width: 140, height: 80, fill: '#b39ddb', rx: 20, ry: 20 });
+                    break;
+                case 'rounded-square':
+                    obj = new fabric.Rect({ left: 210, top: 210, width: 90, height: 90, fill: '#b39ddb', rx: 20, ry: 20 });
+                    break;
+                case 'circle':
+                    obj = new fabric.Circle({ left: 200, top: 200, radius: 50, fill: '#b39ddb' });
+                    break;
+                case 'ellipse':
+                    obj = new fabric.Ellipse({ left: 220, top: 220, rx: 60, ry: 40, fill: '#b39ddb' });
+                    break;
+                case 'star':
+                    obj = new fabric.Polygon([
+                        {x:50,y:0},{x:61,y:35},{x:98,y:35},{x:68,y:57},{x:79,y:91},{x:50,y:70},{x:21,y:91},{x:32,y:57},{x:2,y:35},{x:39,y:35}
+                    ], { left: 250, top: 200, fill: '#b39ddb', scaleX:0.7, scaleY:0.7 });
+                    break;
+                case 'triangle':
+                    obj = new fabric.Triangle({ left: 300, top: 200, width: 100, height: 100, fill: '#b39ddb' });
+                    break;
+                case 'pentagon':
+                    obj = new fabric.Polygon([
+                        {x:50,y:0},{x:98,y:36},{x:79,y:91},{x:21,y:91},{x:2,y:36}
+                    ], { left: 350, top: 200, fill: '#b39ddb', scaleX:1, scaleY:1 });
+                    break;
+                case 'hexagon':
+                    obj = new fabric.Polygon([
+                        {x:50,y:0},{x:98,y:25},{x:98,y:75},{x:50,y:100},{x:2,y:75},{x:2,y:25}
+                    ], { left: 400, top: 200, fill: '#b39ddb', scaleX:1, scaleY:1 });
+                    break;
+                case 'line':
+                    obj = new fabric.Line([100, 100, 250, 100], { left: 100, top: 100, stroke: '#b39ddb', strokeWidth: 5 });
+                    break;
+                case 'arrow':
+                    // Arrow as a line with a triangle head
+                    const line = new fabric.Line([100, 100, 220, 100], { stroke: '#b39ddb', strokeWidth: 5, selectable: false });
+                    const arrowHead = new fabric.Triangle({ left: 220, top: 95, width: 20, height: 20, angle: 90, fill: '#b39ddb', selectable: false });
+                    obj = new fabric.Group([line, arrowHead], { left: 100, top: 100 });
+                    break;
+            }
+            if(obj) canvas.add(obj).setActiveObject(obj);
+        }
+        // Add image
+        function addImage(url) {
+            fabric.Image.fromURL(url, function(img) {
+                img.set({ left: 100, top: 100, scaleX: 0.5, scaleY: 0.5 });
+                canvas.add(img).setActiveObject(img);
+            });
+        }
+        // Upload image
+        document.querySelector('.upload-img').onclick = function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    addImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        };
+        // Image from URL
+        document.querySelector('.img-url').onclick = function() {
+            const url = prompt('Enter image URL:');
+            if (url) addImage(url);
+        };
+        // Add text events
+        document.querySelector('.add-headline').onclick = () => addText('headline');
+        document.querySelector('.add-body').onclick = () => addText('body');
+        // Add shape events
+        document.querySelectorAll('.shape-btn').forEach(btn => {
+            btn.onclick = () => addShape(btn.dataset.shape);
+        });
+        // Background color controls
+        const bgColorInput = document.querySelector('.bg-color-input');
+        const bgColorText = document.querySelector('.bg-color-text');
+        // Sync color input and text
+        function setBgColor(color) {
+            canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
+            // Try to get the hex value for the color
+            let hex = color;
+            try {
+                hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(color)).toHex();
+            } catch (e) {
+                // fallback: try to use the color as is
+                hex = color;
+            }
+            bgColorInput.value = hex;
+            bgColorText.value = color;
+            // Also update the color picker background to match
+            bgColorInput.style.background = hex;
+        }
+        bgColorInput.addEventListener('input', function() {
+            setBgColor(this.value);
+        });
+        bgColorText.addEventListener('change', function() {
+            setBgColor(this.value);
+        });
+        // Keep color input in sync with background changes (e.g. on import)
+        function syncBgColorInputs() {
+            let color = canvas.backgroundColor || '#fff';
+            let hex = color;
+            try {
+                hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(color)).toHex();
+            } catch (e) {
+                hex = color;
+            }
+            bgColorInput.value = hex;
+            bgColorText.value = color;
+            // Also update the color picker background to match
+            bgColorInput.style.background = hex;
+        }
+        // Initialize with current background color
+        syncBgColorInputs();
+        // Also update on background change (e.g. after import)
+        canvas.on('background:changed', syncBgColorInputs);
+        // Patch Fabric.js setBackgroundColor to fire event
+        const origSetBackgroundColor = canvas.setBackgroundColor;
+        canvas.setBackgroundColor = function(color, callback) {
+            origSetBackgroundColor.call(this, color, callback);
+            this.fire('background:changed');
+        };
+        // Background from URL
+        document.querySelector('.bg-url').onclick = function() {
+            const url = prompt('Enter background image URL:');
+            if (url) {
+                fabric.Image.fromURL(url, function(img) {
+                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                        scaleX: canvas.width / img.width,
+                        scaleY: canvas.height / img.height
+                    });
+                });
+            }
+        };
+        // Position controls
+        document.querySelector('.position-btns').onclick = function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const obj = canvas.getActiveObject();
+            if (!obj) return;
+            switch(btn.title) {
+                case 'Align Left': obj.set({ left: 0 }); break;
+                case 'Align Center': obj.set({ left: (canvas.width - obj.getScaledWidth())/2 }); break;
+                case 'Align Right': obj.set({ left: canvas.width - obj.getScaledWidth() }); break;
+                case 'Align Top': obj.set({ top: 0 }); break;
+                case 'Align Middle': obj.set({ top: (canvas.height - obj.getScaledHeight())/2 }); break;
+                case 'Align Bottom': obj.set({ top: canvas.height - obj.getScaledHeight() }); break;
+            }
+            canvas.renderAll();
+        };
+        // Layer controls
+        document.querySelector('.layer-btns').onclick = function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const activeObjects = canvas.getActiveObjects();
+            if (!activeObjects || activeObjects.length === 0) return;
+            switch(btn.title) {
+                case 'Bring Forward':
+                    // Only bring forward the top-most selected object
+                    canvas.bringForward(activeObjects[activeObjects.length - 1]);
+                    break;
+                case 'Send Backward':
+                    // Only send backward the bottom-most selected object
+                    canvas.sendBackwards(activeObjects[0]);
+                    break;
+                case 'Delete':
+                    // Remove all selected objects
+                    activeObjects.forEach(obj => canvas.remove(obj));
+                    break;
+            }
+            // Keep the object selected after layer change (if not deleted)
+            canvas.discardActiveObject();
+            // If objects remain, reselect the first one
+            const remaining = canvas.getObjects().filter(obj => activeObjects.includes(obj));
+            if (remaining.length > 0) {
+                canvas.setActiveObject(remaining[0]);
+            }
+            canvas.renderAll();
+        };
+        // Text controls
+        document.querySelector('.font-family').onchange = function() {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                obj.set({ fontFamily: this.value });
+                canvas.renderAll();
+            }
+        };
+        document.querySelector('.font-size').onchange = function() {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                obj.set({ fontSize: parseInt(this.value) });
+                canvas.renderAll();
+            }
+        };
+        document.querySelector('.bold-btn').onclick = function() {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                obj.set({ fontWeight: obj.fontWeight === 'bold' ? 'normal' : 'bold' });
+                canvas.renderAll();
+            }
+        };
+        document.querySelector('.italic-btn').onclick = function() {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                obj.set({ fontStyle: obj.fontStyle === 'italic' ? 'normal' : 'italic' });
+                canvas.renderAll();
+            }
+        };
+        document.querySelector('.underline-btn').onclick = function() {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                obj.set({ underline: !obj.underline });
+                canvas.renderAll();
+            }
+        };
+        const colorInput = document.querySelector('.color-input');
+        const shapeColorInput = document.querySelector('.shape-color-input');
+
+        // Show/hide color pickers based on selection
+        function updateColorPickers() {
+            const active = canvas.getActiveObject();
+            const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
+            colorInput.style.display = 'none';
+            shapeColorInput.style.display = 'none';
+            // Multi-selection
+            if (activeGroup && activeGroup.length > 1) {
+                // If all selected are text, show text color picker; if all are shapes, show shape color picker; if mixed, show both
+                let allText = activeGroup.every(obj => obj.type === 'i-text');
+                let allShapes = activeGroup.every(obj => ['rect','circle','polygon','triangle','ellipse'].includes(obj.type));
+                let allLines = activeGroup.every(obj => obj.type === 'line');
+                let allArrows = activeGroup.every(obj => obj.type === 'group' && obj._objects && obj._objects.length === 2 && obj._objects[0].type === 'line' && obj._objects[1].type === 'triangle');
+                if (allText) {
+                    colorInput.style.display = '';
+                    let hex = activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#232946';
+                    colorInput.value = hex;
+                    colorInput.style.background = hex;
+                } else if (allShapes) {
+                    shapeColorInput.style.display = '';
+                    let hex = activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#b39ddb';
+                    shapeColorInput.value = hex;
+                    shapeColorInput.style.background = hex;
+                } else if (allLines || allArrows) {
+                    shapeColorInput.style.display = '';
+                    let hex = allLines ? (activeGroup[0].stroke || '#b39ddb') : (activeGroup[0]._objects[0].stroke || '#b39ddb');
+                    try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
+                    shapeColorInput.value = hex;
+                    shapeColorInput.style.background = hex;
+                } else {
+                    // Mixed selection: show shape color picker
+                    shapeColorInput.style.display = '';
+                    shapeColorInput.value = '#b39ddb';
+                    shapeColorInput.style.background = '#b39ddb';
+                }
+                return;
+            }
+            if (active) {
+                if (active.type === 'i-text') {
+                    colorInput.style.display = '';
+                    let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#232946';
+                    colorInput.value = hex;
+                    colorInput.style.background = hex;
+                } else if (['rect','circle','polygon','triangle','ellipse'].includes(active.type)) {
+                    shapeColorInput.style.display = '';
+                    let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#b39ddb';
+                    shapeColorInput.value = hex;
+                    shapeColorInput.style.background = hex;
+                } else if (active.type === 'line') {
+                    shapeColorInput.style.display = '';
+                    let hex = active.stroke || '#b39ddb';
+                    try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
+                    shapeColorInput.value = hex;
+                    shapeColorInput.style.background = hex;
+                } else if (active.type === 'group' && active._objects && active._objects.length === 2 && active._objects[0].type === 'line' && active._objects[1].type === 'triangle') {
+                    // Arrow group
+                    shapeColorInput.style.display = '';
+                    let hex = active._objects[0].stroke || '#b39ddb';
+                    try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
+                    shapeColorInput.value = hex;
+                    shapeColorInput.style.background = hex;
+                } else if (active.type === 'group') {
+                    // Generic group: use fill or stroke of first child
+                    shapeColorInput.style.display = '';
+                    const first = active._objects && active._objects[0];
+                    let hex = '#b39ddb';
+                    if (first && first.fill) {
+                        hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(first.fill)).toHex();
+                    } else if (first && first.stroke) {
+                        hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(first.stroke)).toHex();
+                    }
+                    shapeColorInput.value = hex;
+                    shapeColorInput.style.background = hex;
+                }
+            }
+        }
+        canvas.on('selection:created', updateColorPickers);
+        canvas.on('selection:updated', updateColorPickers);
+        canvas.on('selection:cleared', updateColorPickers);
+        // Also update on object modified (color change)
+        canvas.on('object:modified', updateColorPickers);
+
+        // Text color (color input)
+        colorInput.addEventListener('input', function() {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                obj.set({ fill: this.value });
+                canvas.renderAll();
+                // Update color swatch
+                colorInput.style.background = this.value;
+            }
+        });
+        // Shape color (color input)
+        shapeColorInput.addEventListener('input', function() {
+            const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
+            if (activeGroup && activeGroup.length > 1) {
+                activeGroup.forEach(obj => {
+                    if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
+                        obj.set({ fill: this.value });
+                    } else if (obj.type === 'line') {
+                        obj.set({ stroke: this.value });
+                    } else if (obj.type === 'group' && obj._objects && obj._objects.length === 2 && obj._objects[0].type === 'line' && obj._objects[1].type === 'triangle') {
+                        obj._objects[0].set({ stroke: this.value });
+                        obj._objects[1].set({ fill: this.value });
+                    }
+                });
+                canvas.renderAll();
+                shapeColorInput.style.background = this.value;
+                return;
+            }
+            const obj = canvas.getActiveObject();
+            if (obj) {
+                if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
+                    obj.set({ fill: this.value });
+                } else if (obj.type === 'line') {
+                    obj.set({ stroke: this.value });
+                } else if (obj.type === 'group' && obj._objects && obj._objects.length === 2 && obj._objects[0].type === 'line' && obj._objects[1].type === 'triangle') {
+                    obj._objects[0].set({ stroke: this.value });
+                    obj._objects[1].set({ fill: this.value });
+                } else if (obj.type === 'group' && obj._objects) {
+                    obj._objects.forEach(child => {
+                        if ('fill' in child) child.set({ fill: this.value });
+                        if ('stroke' in child && child.type === 'line') child.set({ stroke: this.value });
+                    });
+                }
+                canvas.renderAll();
+                shapeColorInput.style.background = this.value;
+            }
+        });
+        // Initialize color pickers on load
+        updateColorPickers();
+        // Text align
+        document.querySelector('.align-btns').onclick = function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type === 'i-text') {
+                if (btn.classList.contains('align-left')) obj.set({ textAlign: 'left' });
+                if (btn.classList.contains('align-center')) obj.set({ textAlign: 'center' });
+                if (btn.classList.contains('align-right')) obj.set({ textAlign: 'right' });
+                if (btn.classList.contains('align-justify')) obj.set({ textAlign: 'justify' });
+                canvas.renderAll();
+                // Visually indicate selected align button
+                document.querySelectorAll('.align-btns button').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            }
+        };
+        // Undo/Redo
+        let state = [], mods = 0;
+        function saveState() {
+            mods = 0;
+            state.push(JSON.stringify(canvas));
+        }
+        canvas.on('object:added', saveState);
+        canvas.on('object:modified', saveState);
+        canvas.on('object:removed', saveState);
+        document.getElementById('undo-btn').onclick = function() {
+            if (state.length > 1) {
+                state.pop();
+                canvas.loadFromJSON(state[state.length-1], canvas.renderAll.bind(canvas));
+            }
+        };
+        document.getElementById('redo-btn').onclick = function() {
+            // redo next time
+            alert('Redo not implemented.');
+        };
+        // Copy/Paste
+        let clipboard = null;
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+C or Cmd+C
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+                const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
+                if (activeGroup && activeGroup.length > 1) {
+                    // Multi-selection: create an activeSelection and clone it
+                    const sel = new fabric.ActiveSelection(activeGroup, { canvas: canvas });
+                    sel.clone(function(cloned) {
+                        clipboard = cloned;
+                    });
+                } else {
+                    const active = canvas.getActiveObject();
+                    if (active) {
+                        active.clone(function(cloned) {
+                            clipboard = cloned;
+                        });
+                    }
+                }
+            }
+            // Ctrl+V or Cmd+V
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                if (clipboard) {
+                    clipboard.clone(function(clonedObj) {
+                        canvas.discardActiveObject();
+                        clonedObj.set({ left: (clonedObj.left || 0) + 30, top: (clonedObj.top || 0) + 30, evented: true });
+                        if (clonedObj.type === 'activeSelection') {
+                            // activeSelection needs to be ungrouped and added
+                            clonedObj.canvas = canvas;
+                            clonedObj.forEachObject(function(obj) {
+                                canvas.add(obj);
+                            });
+                            clonedObj.setCoords();
+                        } else {
+                            canvas.add(clonedObj);
+                        }
+                        canvas.setActiveObject(clonedObj);
+                        canvas.requestRenderAll();
+                    });
+                }
+            }
+        });
+        // Save
+        document.getElementById('save-btn').onclick = function() {
+            // Try to get quarter and name from URL (for editing)
+            let quarter = getParam('quarter');
+            let name = getParam('name');
+
+            // If not editing, prompt for name and quarter
+            if (!name) {
+            name = prompt('Enter a Name for this presentation:', 'MyPresentation');
+            if (!name) return;
+            name = name.trim();
+            if (!name) return alert('Name cannot be empty.');
+            }
+            if (!quarter) {
+            quarter = prompt('Which quarter do you want to save this in? (1, 2, 3, or 4)', '1');
+            if (!quarter || !['1','2','3','4'].includes(quarter.trim())) return alert('Invalid quarter.');
+            quarter = quarter.trim();
+            }
+
+            // Ask for a description
+            let description = prompt('Enter a description for this presentation (optional):', '');
+            if (description !== null) description = description.trim();
+
+            // Save the canvas as editable JSON (Fabric.js toJSON)
+            const json = JSON.stringify(canvas.toJSON(['selectable', 'evented', 'editable', 'lockMovementX', 'lockMovementY', 'lockScalingX', 'lockScalingY', 'lockRotation', 'hasControls', 'hasBorders', 'clipPath', 'data']));
+
+            // Save to Firebase under presentations/quarter-X/name
+            db.ref('presentations/quarter-' + quarter + '/' + name).set({
+            json: json,
+            savedAt: new Date().toISOString(),
+            title: name,
+            quarter: quarter,
+            description: description || ''
+            }, function(error) {
+            if (error) {
+                alert('Error saving to Firebase: ' + error.message);
+            } else {
+                alert('Presentation saved as "' + name + '" in Quarter ' + quarter + '!');
+            }
+            });
+
+            // Optionally, also save to localStorage for offline use
+            let saves = JSON.parse(localStorage.getItem('fabric-saves') || '{}');
+            saves[name] = json;
+            localStorage.setItem('fabric-saves', JSON.stringify(saves));
+            localStorage.setItem('fabric-editor', json);
+            localStorage.setItem('fabric-editor-name', name);
+        };
+        // Present
+        document.getElementById('present-btn').onclick = function() {
+            window.open('present.html', '_blank');
+        };
+        // Export as JSON file
+        document.getElementById('export-btn').onclick = function() {
+            const json = JSON.stringify(canvas.toJSON(['selectable', 'evented', 'editable', 'lockMovementX', 'lockMovementY', 'lockScalingX', 'lockScalingY', 'lockRotation', 'hasControls', 'hasBorders', 'clipPath', 'data']));
+            const blob = new Blob([json], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (prompt('Enter filename for export:', 'presentation') || 'presentation') + '.json';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+        };
+
+        // Import from JSON file
+        document.getElementById('import-btn').onclick = function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,application/json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const json = evt.target.result;
+                        canvas.loadFromJSON(json, function() {
+                            canvas.renderAll();
+                            alert('Presentation loaded! You can now save it.');
+                        });
+                    } catch (err) {
+                        alert('Invalid JSON file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        };
+    </script>
+
+    
+</body>
+</html>

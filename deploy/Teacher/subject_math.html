@@ -1,0 +1,1188 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('teachers/' + uid).once('value');
+            const teacher = snap.val();
+            if (!teacher || teacher.role !== "teacher") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+            }
+        });
+    });
+    </script>
+    
+    <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/subject.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="icon" type="image/png" href="../images/icons/math.png" />
+    <title>Math</title>
+    <style>
+    .profile-sidebar {
+    margin-top: 20px;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE and Edge */
+}
+.profile-sidebar::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}
+</style>
+</head>
+
+<body>
+    <div id="mainContent" style="display:none;">
+
+   <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
+
+    <div class="container">
+        <!--<div class="math-header>
+            <h1>Interactive Math Curriculum</h1>
+            <p>Master mathematics through engaging, game-based lessons</p>
+        </div>-->
+
+        <!-- Add these buttons above your quarter navigation (inside .container) -->
+        <div style="display:flex;gap:18px;margin-bottom:24px;">
+            <button id="createLessonBtn" style="background:#388e3c;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;">
+                <i class="fa fa-plus"></i> Create Lesson
+            </button>
+            <button id="createQuizBtn" style="background:#ffe600;color:#000;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-left: auto;">
+                <i class="fa fa-plus"></i> Create Quiz
+            </button>
+        </div>
+
+<script>
+// Create Lesson button: go to Editor.html (new lesson)
+document.getElementById('createLessonBtn').onclick = function() {
+    const subject = 'subject_math';
+    window.location.href = `http://localhost:5173/?subject=${encodeURIComponent(subject)}`;
+};
+
+// Quiz Section button: go to quiz section page (replace with your quiz page)
+document.getElementById('quizSectionBtn').onclick = function() {
+    window.location.href = 'quizSection.html';
+};
+</script>
+
+        <!-- Quarter Navigation -->
+        <div class="quarter-nav">
+            <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
+            <div class="quarter-tab" data-quarter="2">Quarter 2</div>
+            <div class="quarter-tab" data-quarter="3">Quarter 3</div>
+            <div class="quarter-tab" data-quarter="4">Quarter 4</div>
+            <div class="quarter-tab" data-quarter="5" style="margin-left: auto;" >Quizzes</div>
+        </div>
+
+        <!-- Quarter 1 -->
+        <div class="quarter-section active" id="quarter-1">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>
+                    Quarter 1: 
+                    <span class="bounce-word">
+                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+                    </span>
+                </h2>
+            </div>
+
+            <div class="lessons-container">
+                
+
+                
+            </div>
+
+            <!-- YouTube Lessons (auto-fetched) -->
+            <div id="youtube-lessons" data-channel-id="UCjPqk3KZAKIdGShdVLx9fqQ" style="margin-top: 20px;">
+                <div class="quarter-title" style="align-items:center; gap:10px;">
+                    <i class="fab fa-youtube"></i>
+                    <h3 style="margin:0;">Video Lessons</h3>
+                </div>
+                <div class="lessons-container">
+                    <div>Loading YouTube lessons…</div>
+                </div>
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quarter 2 -->
+        <div class="quarter-section" id="quarter-2">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                 <h2>
+                    Quarter 2: 
+                    <span class="bounce-word">
+                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+                    </span>
+                </h2>
+            </div>
+
+            <div class="lessons-container">
+                
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quarter 3 -->
+        <div class="quarter-section" id="quarter-3">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 3: Decimals & Percentages</h2>
+            </div>
+
+            <div class="lessons-container">
+                
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quarter 4 -->
+        <div class="quarter-section" id="quarter-4">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 4: Geometry & Measurement</h2>
+            </div>
+
+            <div class="lessons-container">
+                
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quizzes -->
+        <div class="quarter-section" id="quarter-5">
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">Quizzes</h2>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <label for="quiz-quarter-filter" style="font-weight:600; margin-right:8px;">Filter by Quarter:</label>
+                    <select id="quiz-quarter-filter" style="min-width:120px;">
+                        <option value="1">Quarter 1</option>
+                        <option value="2">Quarter 2</option>
+                        <option value="3">Quarter 3</option>
+                        <option value="4">Quarter 4</option>
+                    </select>
+                </div>
+            </div>
+            <div class="lessons-container">
+                <div id="quiz-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/Teacher Side/subject.js"></script>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3 class="edu">Eduktaktika</h3>
+                <p>
+                    Making learning fun and engaging through interactive game-based
+                    education.
+                </p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="homepage.php">Home</a></li>
+                    <li><a href="subjectTeacher.php">Subject</a></li>
+                    <li><a href="studentlistTeacher.php">Student</a></li>
+                    <li><a href="leaderboardTeacher.php">Leaderboard</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>© 2023 Eduktaktika. All rights reserved.</p>
+        </div>
+    </footer>
+
+        <!-- Edit Profile Modal -->
+
+<link rel="stylesheet" href="../CSS/editProfile.css">
+
+<div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <h3 style="margin-top:0;">Edit Profile</h3>
+        <form id="editProfileForm">
+            <label>First Name:<br>
+                <input type="text" id="edit_fname" required>
+            </label><br><br>
+            <label>Middle Name:<br>
+                <input type="text" id="edit_mname">
+            </label><br><br>
+            <label>Last Name:<br>
+                <input type="text" id="edit_lname" required>
+            </label><br><br>
+            <label>Grade Level:<br>
+                <input type="text" id="edit_gradelevel">
+            </label><br><br>
+            <label>Section:<br>
+                <input type="text" id="edit_section">
+            </label><br><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../assets/js/Teacher Side/editProfile.js"></script>
+<script>
+// Wait for authentication
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+        const teacherUID = user.uid;
+        // Get teacher's section
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        if (!teacher || !teacher.section) {
+            alert("Your section is not set. Please update your profile.");
+            
+            return;
+        }
+        const section = teacher.section;
+
+        // For each quarter, load only this teacher's section lessons
+        for (let q = 1; q <= 4; q++) {
+            db.ref('teachers/' + teacherUID + '/sections/' + section + '/lessons/' + subjectPage + '/quarter-' + q)
+                .once('value', function(snapshot) {
+                    const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                    if (!container) return;
+                    container.innerHTML = '';
+                    if (!snapshot.exists()) {
+                        container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+                        return;
+                    }
+                    snapshot.forEach(function(child) {
+                        const data = child.val();
+                        const name = child.key;
+                        const item = document.createElement('div');
+                        item.className = 'lesson-item';
+                        item.setAttribute('data-presentation', name);
+                        item.innerHTML = `
+                            <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                            <div class="lesson-title">
+                                <h3>${data.title || name}</h3>
+                                <p>${data.description ? data.description : ''}</p>
+                                <span class="lesson-badge" onclick="viewPresentation('${q}','${name}','view','${subjectPage}')" style="cursor:pointer;">View</span>
+                                <button class="lesson-badge" onclick="viewPresentation('${q}','${name}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
+                            </div>
+                        `;
+                        container.appendChild(item);
+                    });
+                });
+        }
+    }
+});
+
+// Remove the old global loader and its call!
+// function loadPresentationsByQuarter(quarter) { ... }
+// ['1','2','3','4','5'].forEach(loadPresentationsByQuarter);
+
+function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
+    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
+    if (mode === 'edit') {
+        window.location.href = 'Editor.html?' + params;
+    } else {
+        window.location.href = 'present.html?' + params;
+    }
+}
+</script>
+
+<style>
+    #createLessonModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+    #createLessonModal .modal-content {
+        background: #fff;
+        padding: 32px 28px;
+        border-radius: 16px;
+        max-width: 370px;
+        width: 90%;
+        box-shadow: 0 4px 24px #0002;
+        text-align: left;
+        position: relative;
+        animation: modalPop 0.25s;
+    }
+        @keyframes modalPop {
+        0% { transform: scale(0.95); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    #createLessonModal h3 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.35rem;
+        color: #059981;
+        letter-spacing: 1px;
+    }
+    #createLessonModal label {
+        font-weight: 500;
+        color: #2d3923;
+        font-size: 1rem;
+    }
+    #createLessonModal input, #createLessonModal select, #createLessonModal textarea {
+        width: 100%;
+        padding: 8px 10px;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        border: 1px solid #b2b2b2;
+        border-radius: 6px;
+        font-size: 1rem;
+        background: #f8f8f8;
+        transition: border 0.2s;
+    }
+    #createLessonModal input:focus, #createLessonModal select:focus, #createLessonModal textarea:focus {
+        border: 1.5px solid #059981;
+        outline: none;
+        background: #fff;
+    }
+    #createLessonModal .modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+    #createLessonModal button[type="button"] {
+        background: #eee;
+        color: #333;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-size: 1rem;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createLessonModal button[type="button"]:hover {
+        background: #e0e0e0;
+    }
+    #createLessonModal button[type="submit"] {
+        background: #059981;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createLessonModal button[type="submit"]:hover {
+        background: #037a65;
+    }
+</style>
+
+<!-- Add this near the end of your body, before </body> -->
+<div id="createLessonModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <h3 style="margin-top:0;">Create New Lesson</h3>
+        <form id="createLessonForm">
+            <label>Quarter:<br>
+                <select id="lesson_quarter" required>
+                    <option value="">Select Quarter</option>
+                    <option value="1">Quarter 1</option>
+                    <option value="2">Quarter 2</option>
+                    <option value="3">Quarter 3</option>
+                    <option value="4">Quarter 4</option>
+                </select>
+            </label><br><br>
+            <label>Title:<br>
+                <input type="text" id="lesson_title" required>
+            </label><br><br>
+            <label>Description:<br>
+                <textarea id="lesson_desc" rows="2"></textarea>
+            </label><br><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeCreateLessonModal()" style="margin-right:10px;">Cancel</button>
+                <button type="submit">Start</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Place this script after your modal HTML
+
+// Show modal on Create Lesson click
+document.getElementById('createLessonBtn').onclick = function() {
+    const subject = 'subject_math';
+    window.location.href = `http://localhost:5173/?subject=${encodeURIComponent(subject)}`;
+};
+
+// Hide modal function
+function closeCreateLessonModal() {
+    document.getElementById('createLessonModal').style.display = 'none';
+}
+
+// Set the subject page variable based on the current page
+const subjectPage = "subject_math";
+document.getElementById('createLessonForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const quarter = document.getElementById('lesson_quarter').value;
+    const title = document.getElementById('lesson_title').value.trim();
+    const desc = document.getElementById('lesson_desc').value.trim();
+
+    if (!quarter || !title) {
+        alert('Quarter and Title are required!');
+        return;
+    }
+
+    const user = firebase.auth().currentUser;
+    const teacherUID = user.uid;
+
+    // Get teacher's section from database
+    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+    const teacher = teacherSnap.val();
+    if (!teacher || !teacher.section) {
+        alert("Your section is not set. Please update your profile.");
+        return;
+    }
+    const section = teacher.section;
+
+    const blankSlide = JSON.stringify([{
+        version: "5.2.4",
+        objects: [],
+        backgroundColor: "#fff"
+    }]);
+
+    const lessonData = {
+        slides: blankSlide,
+        title: title,
+        quarter: quarter,
+        description: desc,
+        savedAt: new Date().toISOString()
+    };
+
+
+
+    // ALSO save to the section-specific path for student loading:
+    db.ref('teachers/' + teacherUID + '/sections/' + section + '/lessons/' + subjectPage + '/quarter-' + quarter + '/' + title).set(lessonData, function(error) {
+        if (error) {
+            alert('Error creating lesson: ' + error.message);
+        } else {
+            document.getElementById('lesson_quarter').value = '';
+            document.getElementById('lesson_title').value = '';
+            document.getElementById('lesson_desc').value = '';
+            closeCreateLessonModal();
+
+            // Redirect to Editor.html with parameters and subject info
+            const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&subject=${encodeURIComponent(subjectPage)}`;
+            window.location.href = `Editor.html?${params}`;
+        }
+    });
+};
+</script>
+
+<script>
+
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (!user) return;
+    const teacherUID = user.uid;
+    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+    const teacher = teacherSnap.val();
+    const section = teacher && teacher.section ? teacher.section : null;
+
+    for (let q = 1; q <= 4; q++) {
+        const container = document.querySelector(`#quarter-${q} .lessons-container`);
+        if (!container) continue;
+
+        // Fetch ONLY teacher's own lessons
+        let lessons = [];
+        if (section) {
+            const teacherLessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
+            if (teacherLessonsSnap.exists()) {
+                teacherLessonsSnap.forEach(child => {
+                    const data = child.val();
+                    lessons.push({
+                        title: data.title || child.key,
+                        description: data.description || ''
+                    });
+                });
+            }
+        }
+
+        // Sort lessons alphabetically by title
+        lessons.sort((a, b) => a.title.localeCompare(b.title));
+
+        // Render lessons
+        if (lessons.length === 0) {
+            container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+        } else {
+            container.innerHTML = lessons.map(lesson => `
+                <div class="lesson-item" data-presentation="${lesson.title}">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                    <div class="lesson-title">
+                        <h3>${lesson.title}</h3>
+                        <p>${lesson.description}</p>
+                        <button class="lesson-badge" onclick="viewPresentation('${q}','${lesson.title}','view','${subjectPage}')" style="cursor:pointer;">View</button>
+                        <button class="lesson-badge" onclick="viewPresentation('${q}','${lesson.title}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+});
+function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
+    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
+    if (mode === 'edit') {
+        window.location.href = 'Editor.html?' + params;
+    } else {
+        window.location.href = 'present.html?' + params;
+    }
+}
+</script>
+
+
+<script>
+
+// Load quizzes for the selected quarter under the teacher's section
+async function loadTeacherQuizzes(quarter) {
+    const quizList = document.getElementById('quiz-list');
+    quizList.innerHTML = '<div style="color:#888;">Loading...</div>';
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        quizList.innerHTML = "<div>Please log in to view your quizzes.</div>";
+        return;
+    }
+
+    // Get teacher's section
+    const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+    const teacher = teacherSnap.val();
+    if (!teacher || !teacher.section) {
+        quizList.innerHTML = "<div>No section found for this teacher.</div>";
+        return;
+    }
+    const section = teacher.section;
+
+    // Load quizzes from teacher's section
+    const snap = await db.ref('teachers/' + user.uid + '/sections/' + section + '/quizzes/' + subjectPage + '/' + quarter).once('value');
+    if (!snap.exists()) {
+        quizList.innerHTML = "<div>No quizzes found for this quarter.</div>";
+        return;
+    }
+    let quizzes = [];
+    snap.forEach(child => {
+        const data = child.val();
+        quizzes.push({
+            title: data.title || child.key,
+            description: data.description || '',
+            quarter: data.quarter || quarter,
+            savedAt: data.savedAt || ""
+        });
+    });
+     // Sort quizzes by savedAt (old to new)
+    quizzes.sort((a, b) => new Date(a.savedAt) - new Date(b.savedAt));
+    quizList.innerHTML = `
+        <div style="display: flex; flex-wrap: nowrap; gap: 18px;">
+            ${quizzes.map(quiz => `
+                <div class="lesson-item" data-quiz="${quiz.title}">
+                    <div class="lesson-thumbnail" style="background-color: #ffdd01"></div>
+                    <div class="lesson-title">
+                        <h3>${quiz.title}</h3>
+                        <p>${quiz.description}</p>
+                        <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','view','${subjectPage}')" style="cursor:pointer;">View</button>
+                        <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+// Listen for auth and filter changes
+firebase.auth().onAuthStateChanged(function(user) {
+    const filter = document.getElementById('quiz-quarter-filter');
+    if (!filter) return;
+    filter.value = '1';
+    if (user) {
+        loadTeacherQuizzes('1');
+        filter.disabled = false;
+        filter.onchange = function() {
+            loadTeacherQuizzes(this.value);
+        };
+    } else {
+        document.getElementById('quiz-list').innerHTML = "<div>Please log in to view your quizzes.</div>";
+        filter.disabled = true;
+    }
+});
+
+// Helper for view/edit
+function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
+    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
+    if (mode === 'edit') {
+        window.location.href = 'quizEditor.html?' + params;
+    } else {
+        window.location.href = 'quizView.html?' + params;
+    }
+}
+
+
+</script>
+
+<div id="createQuizModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <h3 style="margin-top:0;">Create New Quiz</h3>
+        <form id="createQuizForm">
+            <label>Quarter:<br>
+                <select id="quiz_quarter" required>
+                    <option value="">Select Quarter</option>
+                    <option value="1">Quarter 1</option>
+                    <option value="2">Quarter 2</option>
+                    <option value="3">Quarter 3</option>
+                    <option value="4">Quarter 4</option>
+                </select>
+            </label><br><br>
+            <label>Title:<br>
+                <input type="text" id="quiz_title" required>
+            </label><br><br>
+            <label>Description:<br>
+                <textarea id="quiz_desc" rows="2"></textarea>
+            </label><br><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeCreateQuizModal()" style="margin-right:10px;">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+        #quiz-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        justify-content: flex-start;
+        align-items: stretch;
+        margin-top: 10px;
+    }
+    .lesson-item {
+        flex: 1 1 260px;
+        min-width: 220px;
+        max-width: 320px;
+        box-sizing: border-box;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px #0001;
+        padding: 18px 14px 14px 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 8px;
+    }
+    .lesson-thumbnail {
+        width: 100%;
+        height: 80px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        background-size: cover;
+        background-position: center;
+    }
+    .lesson-title h3 {
+        font-size: 1.15rem;
+        margin: 0 0 6px 0;
+    }
+    .lesson-title p {
+        font-size: 0.98rem;
+        color: #444;
+        margin: 0 0 10px 0;
+    }
+    .lesson-badge {
+        background: #ffe600;
+        color: #222;
+        border: none;
+        border-radius: 6px;
+        padding: 7px 18px;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .lesson-badge:hover {
+        background: #ffd600;
+    }
+    #createQuizModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+    #createQuizModal .modal-content {
+        background: #fff;
+        padding: 32px 28px;
+        border-radius: 16px;
+        max-width: 370px;
+        width: 90%;
+        box-shadow: 0 4px 24px #0002;
+        text-align: left;
+        position: relative;
+        animation: modalPop 0.25s;
+    }
+        @keyframes modalPop {
+        0% { transform: scale(0.95); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    #createQuizModal h3 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.35rem;
+        color: #059981;
+        letter-spacing: 1px;
+    }
+    #createQuizModal label {
+        font-weight: 500;
+        color: #2d3923;
+        font-size: 1rem;
+    }
+    #createQuizModal input, #createQuizModal select, #createQuizModal textarea {
+        width: 100%;
+        padding: 8px 10px;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        border: 1px solid #b2b2b2;
+        border-radius: 6px;
+        font-size: 1rem;
+        background: #f8f8f8;
+        transition: border 0.2s;
+    }
+    #createQuizModal input:focus, #createQuizModal select:focus, #createQuizModal textarea:focus {
+        border: 1.5px solid #059981;
+        outline: none;
+        background: #fff;
+    }
+    #createQuizModal .modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+    #createQuizModal button[type="button"] {
+        background: #eee;
+        color: #333;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-size: 1rem;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createQuizModal button[type="button"]:hover {
+        background: #e0e0e0;
+    }
+    #createQuizModal button[type="submit"] {
+        background: #059981;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createLessonModal button[type="submit"]:hover {
+        background: #037a65;
+    }
+</style>
+
+<script>
+    // Show modal on Create Quiz click
+document.getElementById('createQuizBtn').onclick = function() {
+    document.getElementById('createQuizModal').style.display = 'flex';
+};
+function closeCreateQuizModal() {
+    document.getElementById('createQuizModal').style.display = 'none';
+}
+
+// Handle quiz creation and save to teacher's section
+document.getElementById('createQuizForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const quarter = document.getElementById('quiz_quarter').value;
+    const title = document.getElementById('quiz_title').value.trim();
+    const desc = document.getElementById('quiz_desc').value.trim();
+
+    if (!quarter || !title) {
+        alert('Quarter and Title are required!');
+        return;
+    }
+
+    const quizData = {
+        questions: [],
+        title: title,
+        quarter: quarter,
+        description: desc,
+        savedAt: new Date().toISOString()
+    };
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert("You must be logged in as a teacher to create a quiz.");
+        return;
+    }
+    const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+    const teacher = teacherSnap.val();
+    if (!teacher || !teacher.section) {
+        alert("No section found for this teacher.");
+        return;
+    }
+    const section = teacher.section;
+    await db.ref('teachers/' + user.uid + '/sections/' + section + '/quizzes/' + subjectPage + '/' + quarter + '/' + title).set(quizData);
+
+    closeCreateQuizModal();
+    // Refresh the quiz list for the selected quarter
+    document.getElementById('quiz-quarter-filter').value = quarter;
+    loadTeacherQuizzes(quarter);
+
+    // Redirect to QuizEditor.html for the new quiz
+    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&subject=${encodeURIComponent(subjectPage)}`;
+    window.location.href = 'quizEditor.html?' + params;
+};
+</script>
+
+<script>
+// Load latest YouTube videos via channel RSS feed into Quarter 1 (Teacher)
+async function loadYouTubeVideosTeacher() {
+    const wrapper = document.getElementById('youtube-lessons');
+    const container = document.querySelector('#youtube-lessons .lessons-container');
+    if (!container || !wrapper) return;
+
+    // Configure your channel ID here or set data-channel-id on #youtube-lessons
+    const channelId = (wrapper.dataset.channelId || '').trim();
+    if (!channelId) {
+        container.innerHTML = '<div style="color:#888;">Set a YouTube channel ID to load videos.</div>';
+        return;
+    }
+
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`;
+
+    // Helper to fetch with robust CORS fallbacks
+    async function fetchWithCors(url) {
+        // 1) Try direct
+        try {
+            const r = await fetch(url);
+            if (r.ok) return await r.text();
+            throw new Error('HTTP ' + r.status);
+        } catch (e1) {
+            // 2) Try AllOrigins raw endpoint
+            try {
+                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+                if (rAO.ok) return await rAO.text();
+                throw new Error('AllOrigins HTTP ' + rAO.status);
+            } catch (e2) {
+                // 3) Try r.jina.ai mirror (read-only proxy with permissive CORS)
+                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
+                const rJ = await fetch(jinaUrl);
+                if (rJ.ok) return await rJ.text();
+                throw new Error('jina.ai HTTP ' + rJ.status);
+            }
+        }
+    }
+
+    try {
+        const xmlText = await fetchWithCors(feedUrl);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xmlText, 'text/xml');
+        const entries = Array.from(doc.getElementsByTagName('entry'));
+
+        if (!entries.length) {
+            container.innerHTML = '<div>No recent videos found.</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
+        entries.slice(0, 5).forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+                || entry.getElementsByTagName('yt:videoId')?.[0]
+                || entry.querySelector('yt\\:videoId, videoId');
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            if (!videoId) return;
+
+            const card = document.createElement('div');
+            card.className = 'lesson-item';
+            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+            card.innerHTML = `
+                <div class="video-embed" style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;margin-bottom:12px;background:#000;">
+                    <iframe src="https://www.youtube.com/embed/${videoId}" title="${title.replace(/"/g, '&quot;')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" loading="lazy"></iframe>
+                </div>
+                <div class="lesson-title">
+                    <h3>${title}</h3>
+                    <button class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='${watchUrl}'">Watch</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        if (!container.children.length) {
+            container.innerHTML = '<div>No recent videos found.</div>';
+        }
+    } catch (err) {
+        console.error('Error fetching YouTube RSS (teacher)', err);
+        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
+</script>
+
+    </div>
+</body>
+
+</html>

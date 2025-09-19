@@ -1,0 +1,8 @@
+# robots.txt (temporary - block all indexing while in prototype stage)
+User-agent: *
+Disallow: /
+
+# When you are ready for search engines to index the site, REPLACE the above with for example:
+# User-agent: *
+# Allow: /
+# Or selectively allow and keep sensitive folders blocked.

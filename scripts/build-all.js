@@ -8,7 +8,7 @@
  * Excludes: EXAMPLES/ folder entirely.
  */
 const { execSync } = require('child_process');
-const { rmSync, mkdirSync, cpSync, existsSync, readdirSync, lstatSync } = require('fs');
+const { rmSync, mkdirSync, cpSync, existsSync, readdirSync, lstatSync, statSync, readFileSync, writeFileSync, copyFileSync } = require('fs');
 const { join } = require('path');
 
 const root = process.cwd();
@@ -16,9 +16,39 @@ const deployDir = join(root, 'deploy');
 
 function log(msg){ console.log('[build-all]', msg); }
 
-function safeCopy(src, dest) {
+function safeCopyFile(src, dest) {
+  try {
+    copyFileSync(src, dest);
+  } catch (e) {
+    log('FILE COPY SKIPPED (' + e.code + '): ' + src);
+  }
+}
+
+function copyRecursive(src, dest) {
   if (!existsSync(src)) { log('skip (missing): ' + src); return; }
-  cpSync(src, dest, { recursive: true });
+  try {
+    if (lstatSync(src).isDirectory()) {
+      mkdirSync(dest, { recursive: true });
+      const entries = readdirSync(src);
+      for (const entry of entries) {
+        const s = join(src, entry);
+        const d = join(dest, entry);
+        try {
+          if (lstatSync(s).isDirectory()) {
+            copyRecursive(s, d);
+          } else {
+            safeCopyFile(s, d);
+          }
+        } catch (innerErr) {
+          log('SKIP entry (' + innerErr.code + '): ' + s);
+        }
+      }
+    } else {
+      safeCopyFile(src, dest);
+    }
+  } catch (err) {
+    log('SKIP path (' + err.code + '): ' + src);
+  }
 }
 
 // 1. Clean deploy dir
@@ -51,8 +81,8 @@ const includeFolders = [
 includeFolders.forEach(folder => {
   const src = join(root, folder);
   if (existsSync(src)) {
-    cpSync(src, join(deployDir, folder), { recursive: true });
-    log('Copied folder: ' + folder);
+    copyRecursive(src, join(deployDir, folder));
+    log('Copied folder (recursive): ' + folder);
   }
 });
 

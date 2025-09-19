@@ -1,0 +1,573 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/subject.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <title>Subject</title>
+</head>
+
+<body>
+    
+   <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+
+                    <li><a href="leaderboard.html">Leaderboard</a></li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+     <!-- Profile Sidebar (Dynamic with Firebase) -->
+        <div id="profileSidebar" class="profile-sidebar">
+            <div class="sidebar-content">
+                <button class="close-btn" id="closeSidebar">&times;</button>
+                <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+                <div class="profile-name" id="profileName">Loading...</div>
+                <button class="profile-edit-btn">Edit Profile</button><br>
+                <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+                    <div><strong>ID:</strong> <span id="profileId">-</span></div>
+                    <div><strong>First Name:</strong> <span id="profileFirstName">-</span></div>
+                    <div><strong>Middle Name:</strong> <span id="profileMiddleName">-</span></div>
+                    <div><strong>Last Name:</strong> <span id="profileLastName">-</span></div>
+                    <div><strong>Grade Level:</strong> <span id="profileGrade">-</span></div>
+                    <div><strong>Section:</strong> <span id="profileSection">-</span></div>
+                </div>
+                <div class="logout-switch-row">
+                    <div class="logout-switch" id="logoutSwitch">
+                        <div class="logout-switch-circle"></div>
+                    </div>
+                    <span class="logout-label" id="logoutLabel">LOGOUT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+        <script src="../assets/js/Student Side/profile.js"></script>
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
+
+    <div class="container">
+        <!--<div class="math-header>
+            <h1>Interactive Math Curriculum</h1>
+            <p>Master mathematics through engaging, game-based lessons</p>
+        </div>-->
+
+        <!-- Quarter Navigation -->
+        <div class="quarter-nav">
+            <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
+            <div class="quarter-tab" data-quarter="2">Quarter 2</div>
+            <div class="quarter-tab" data-quarter="3">Quarter 3</div>
+            <div class="quarter-tab" data-quarter="4">Quarter 4</div>
+        </div>
+
+        <!-- Quarter 1 -->
+        <div class="quarter-section active" id="quarter-1">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>
+                    Quarter 1: 
+                    <span class="bounce-word">
+                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+                    </span>
+                </h2>
+            </div>
+
+            <div class="lessons-container">
+                <div class="lesson-item" data-lesson="1">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>12 and 24 hour time</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quarter 2 -->
+        <div class="quarter-section" id="quarter-2">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                 <h2>
+                    Quarter 1: 
+                    <span class="bounce-word">
+                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+                    </span>
+                </h2>
+            </div>
+
+            <div class="lessons-container">
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Addition</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Subtraction</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Multiplication</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Division</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quarter 3 -->
+        <div class="quarter-section" id="quarter-3">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 3: Decimals & Percentages</h2>
+            </div>
+
+            <div class="lessons-container">
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Addition</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Subtraction</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Multiplication</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Division</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Quarter 4 -->
+        <div class="quarter-section" id="quarter-4">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 4: Geometry & Measurement</h2>
+            </div>
+
+            <div class="lessons-container">
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Addition</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Subtraction</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Multiplication</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+
+                <div class="lesson-item">
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>Division</h3>
+                        <p>
+                            Measurement and Geometry
+                        </p>
+                        <span class="lesson-badge">View</span>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+    <script src="../assets/js/Teacher Side/subject.js"></script>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3 class="edu">Eduktaktika</h3>
+                <p>
+                    Making learning fun and engaging through interactive game-based
+                    education.
+                </p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="homepage.php">Home</a></li>
+                    <li><a href="subjectTeacher.php">Subject</a></li>
+                    <li><a href="studentlistTeacher.php">Student</a></li>
+                    <li><a href="leaderboardTeacher.php">Leaderboard</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>© 2023 Eduktaktika. All rights reserved.</p>
+        </div>
+    </footer>
+
+        <!-- Edit Profile Modal -->
+<link rel="stylesheet" href="../CSS/editProfile.css">
+
+<div id="editProfileModal">
+    <div class="modal-content">
+        <h3>Edit Profile</h3>
+        <form id="editProfileForm">
+            <label>First Name:<br>
+                <input type="text" id="edit_fname" required>
+            </label><br>
+            <label>Middle Name:<br>
+                <input type="text" id="edit_mname">
+            </label><br>
+            <label>Last Name:<br>
+                <input type="text" id="edit_lname" required>
+            </label><br>
+            <label>Grade Level:<br>
+                <input type="text" id="edit_gradelevel">
+            </label><br>
+            <label>Section:<br>
+                <input type="text" id="edit_section">
+            </label><br>
+            <label>School Year:<br>
+                <input type="text" id="edit_school_year">
+            </label><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeEditProfileModal()">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="../assets/js/Student Side/editProfile.js"></script>
+
+<style>
+    nav ul {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+}
+nav ul li {
+    list-style: none;
+    margin: 0 10px;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+nav ul li a, nav ul li .dropbtn {
+    display: flex;
+    align-items: center;
+    height: 48px; /* Match your nav height */
+    line-height: 48px;
+    padding: 0 18px;
+    color: #2d3923;
+    text-decoration: none;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+nav ul li .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #fff;
+    min-width: 120px;
+    box-shadow: 0 4px 16px #0002;
+    z-index: 1000;
+    border-radius: 8px;
+    padding: 0;
+    margin: 0;
+    top: 100%;
+    left: 0;
+}
+nav ul li .dropdown-content li {
+    list-style: none;
+    border-bottom: 1px solid #eee;
+}
+nav ul li .dropdown-content li:last-child {
+    border-bottom: none;
+}
+nav ul li .dropdown-content a {
+    color:  18px;
+    color: #2d3923;
+    padding: 10px 20px;
+    display: block;
+    text-decoration: none;
+    border-radius: 0;
+    transition: background 0.2s;
+    height: auto;
+    line-height: normal;
+}
+nav ul li .dropdown-content a:hover {
+    background: #f0f0f0;
+}
+nav ul li.dropdown:hover .dropdown-content {
+    display: block;
+}
+</style>
+</body>
+
+</html>

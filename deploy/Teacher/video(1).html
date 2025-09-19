@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Lessons</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Site styles to match Teacher pages -->
+  <link rel="stylesheet" href="../CSS/header.css">
+  <link rel="stylesheet" href="../CSS/subject.css">
+  <link rel="stylesheet" href="../CSS/footer.css">
+  <!-- Plyr (optional, for alternative player UI) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .page-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .toolbar { display:flex; align-items:center; justify-content: space-between; gap:12px; margin: 12px 0 16px; }
+    .toolbar a.back {
+      color: #2d3923;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .toolbar a.back:hover { background: #f6f6f6; }
+    .toolbar h1 { font-size: 16px; font-weight: 600; margin: 0; color: #2d3923; }
+    .right-controls { display:flex; align-items:center; gap:8px; }
+    select#playerSelect { background:#fff; color:#2d3923; border:1px solid #e0e0e0; border-radius:8px; padding:6px 10px; }
+
+    .player {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .info { margin-top: 10px; color: #555; font-size: 14px; }
+    .error {
+      background: #ffecec;
+      color: #a33a3a;
+      border: 1px solid #ffd2d2;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+  </style>
+  <!-- Inline nav styles copied from subject pages for consistent dropdown behavior -->
+  <style>
+    nav ul {
+      display: flex;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+    }
+    nav ul li {
+      list-style: none;
+      margin: 0 10px;
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    nav ul li a, nav ul li .dropbtn {
+      display: flex;
+      align-items: center;
+      height: 48px;
+      line-height: 48px;
+      padding: 0 18px;
+      color: #2d3923;
+      text-decoration: none;
+      font-size: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    nav ul li .dropdown-content {
+      display: none;
+      position: absolute;
+      background: #fff;
+      min-width: 120px;
+      box-shadow: 0 4px 16px #0002;
+      z-index: 1000;
+      border-radius: 8px;
+      padding: 0;
+      margin: 0;
+      top: 100%;
+      left: 0;
+    }
+    nav ul li .dropdown-content li {
+      list-style: none;
+      border-bottom: 1px solid #eee;
+    }
+    nav ul li .dropdown-content li:last-child {
+      border-bottom: none;
+    }
+    nav ul li .dropdown-content a {
+      color: #2d3923;
+      padding: 10px 20px;
+      display: block;
+      text-decoration: none;
+      border-radius: 0;
+      transition: background 0.2s;
+      height: auto;
+      line-height: normal;
+    }
+    nav ul li .dropdown-content a:hover { background: #f0f0f0; }
+    nav ul li.dropdown:hover .dropdown-content { display: block; }
+  </style>
+</head>
+<body>
+  <div id="mainContent" style="display:none;">
+    <header>
+      <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+      </div>
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <div class="logo-text">
+            <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+          </div>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="homepage.html">Home</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+              <ul class="dropdown-content">
+                <li><a href="subject_math.html">Math</a></li>
+                <li><a href="subject_english.html">English</a></li>
+                <li><a href="subject_science.html">Science</a></li>
+              </ul>
+            </li>
+            <li><a href="studentlist.html">Student</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li>
+              <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Profile Sidebar -->
+    <div id="profileSidebar" class="profile-sidebar">
+      <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+        <div class="profile-name" id="profileName">Loading...</div>
+        <button class="profile-edit-btn">Edit Profile</button><br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+          <div><strong>ID:</strong> <span id="profileId">-</span></div>
+          <div><strong>First Name:</strong> <span id="profileFirstName">-</span></div>
+          <div><strong>Middle Name:</strong> <span id="profileMiddleName">-</span></div>
+          <div><strong>Last Name:</strong> <span id="profileLastName">-</span></div>
+          <div><strong>Grade Level:</strong> <span id="profileGrade">-</span></div>
+          <div><strong>Section:</strong> <span id="profileSection">-</span></div>
+        </div>
+        <div class="logout-switch-row">
+          <div class="logout-switch" id="logoutSwitch">
+            <div class="logout-switch-circle"></div>
+          </div>
+          <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
+
+    <div class="page-container">
+      <div class="toolbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <a class="back" href="subject_math.html"><i class="fa fa-arrow-left"></i> Back to Math</a>
+          <h1>Video Lessons</h1>
+        </div>
+        <div class="right-controls">
+          <label for="playerSelect" style="font-size:12px; opacity:.8; color:#2d3923;">Player</label>
+          <select id="playerSelect">
+            <option value="plyr">Plyr (YouTube)</option>
+            <option value="youtube">YouTube (default)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="player" class="player" aria-label="YouTube video player"></div>
+      <div class="info">If the video doesn't start, check your connection or try reloading the page.</div>
+      <div id="msg"></div>
+    </div>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3 class="edu">Eduktaktika</h3>
+          <p>Making learning fun and engaging through interactive game-based education.</p>
+        </div>
+        <div class="footer-column">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="homepage.php">Home</a></li>
+            <li><a href="subjectTeacher.php">Subject</a></li>
+            <li><a href="studentlistTeacher.php">Student</a></li>
+            <li><a href="leaderboardTeacher.php">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Support</h3>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        <p>© 2023 Eduktaktika. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.polyfilled.min.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+      authDomain: "edutaktika.firebaseapp.com",
+      databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+      projectId: "edutaktika",
+      storageBucket: "edutaktika.appspot.com",
+      messagingSenderId: "676848575316",
+      appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+      measurementId: "G-X3GT5TNN87"
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // Auth guard for teacher
+    document.addEventListener("DOMContentLoaded", function() {
+      firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user) {
+          window.location.href = "logreg.html";
+          return;
+        }
+        const uid = user.uid;
+        const snapshot = await firebase.database().ref('teachers/' + uid).once('value');
+        const teacher = snapshot.val();
+        if (!teacher || teacher.role !== "teacher") {
+          document.getElementById('mainContent').style.display = "none";
+          alert("Access denied.");
+          await firebase.auth().signOut();
+          window.location.href = "logreg.html";
+        } else {
+          document.getElementById('mainContent').style.display = "block";
+        }
+      });
+    });
+
+    // Populate profile sidebar
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        firebase.database().ref('teachers/' + user.uid).once('value').then(function(snapshot) {
+          const data = snapshot.val();
+          if (data) {
+            document.getElementById('profileName').textContent = (data.fname || '') + ' ' + (data.lname || '');
+            document.getElementById('profileId').textContent = data.id || user.uid;
+            document.getElementById('profileFirstName').textContent = data.fname || '';
+            document.getElementById('profileMiddleName').textContent = data.mname || '';
+            document.getElementById('profileLastName').textContent = data.lname || '';
+            document.getElementById('profileGrade').textContent = data.grade || '';
+            document.getElementById('profileSection').textContent = data.section || '';
+            document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "user");
+          }
+        });
+      } else if(!user) {
+        window.location.href = "../index.html";
+      } else {
+        const el = document.getElementById('profileName');
+        if (el) el.textContent = "Not logged in";
+      }
+    });
+
+    // Logout logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const logout = document.getElementById('logoutSwitch');
+      if (logout) {
+        logout.onclick = function() {
+          firebase.auth().signOut().then(function() {
+            window.location.href = "logreg.html";
+          });
+        };
+      }
+    });
+  </script>
+  <script>
+    (function(){
+      const params = new URLSearchParams(location.search);
+      const id = (params.get('id') || '').trim();
+      const msg = document.getElementById('msg');
+      const player = document.getElementById('player');
+      const selector = document.getElementById('playerSelect');
+
+      // Basic validation for YouTube video id (usually 11 chars, alnum, -, _)
+      const valid = /^[a-zA-Z0-9_-]{8,15}$/.test(id);
+      if (!id || !valid) {
+        msg.innerHTML = '<div class="error">Invalid or missing video id.</div>';
+        return;
+      }
+
+      function renderYouTube() {
+        player.innerHTML = '';
+        const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?rel=0&autoplay=1&mute=1&modestbranding=1&playsinline=1`;
+        const iframe = document.createElement('iframe');
+        iframe.src = src;
+        iframe.title = 'YouTube video player';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        iframe.allowFullscreen = true;
+        iframe.loading = 'lazy';
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        player.appendChild(iframe);
+      }
+
+      function renderPlyr() {
+        try {
+          player.innerHTML = `<div data-plyr-provider="youtube" data-plyr-embed-id="${id}"></div>`;
+          if (window.plyrInstance) {
+            try { window.plyrInstance.destroy(); } catch(e) {}
+          }
+          window.plyrInstance = new Plyr('#player [data-plyr-provider]', {
+            autoplay: true,
+            muted: true,
+            controls: ['play-large','play','progress','current-time','mute','volume','settings','pip','airplay','fullscreen'],
+            youtube: { rel: 0, modestbranding: 1 }
+          });
+        } catch (e) {
+          console.warn('Plyr init failed, falling back to YouTube iframe.', e);
+          renderYouTube();
+        }
+      }
+
+      function render(type) {
+        if (type === 'youtube') return renderYouTube();
+        return renderPlyr();
+      }
+
+      const saved = localStorage.getItem('videoPlayer') || 'plyr';
+      selector.value = saved;
+      render(saved);
+
+      selector.addEventListener('change', (e) => {
+        const type = e.target.value;
+        localStorage.setItem('videoPlayer', type);
+        render(type);
+      });
+    })();
+  </script>
+</body>
+</html>

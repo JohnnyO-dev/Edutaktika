@@ -1,0 +1,396 @@
+:root {
+        --primary: #2e8b57;
+        --secondary: #ffd700;
+        --accent: #ff69b4;
+        --background: #f0f8ff;
+        --card-bg: #ffffff;
+        --text-main: #22223b;
+        --text-light: #9a8c98;
+        --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+        --radius: 18px;
+    }
+
+    body {
+        font-family: 'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
+        margin: 0;
+        background: var(--background);
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Hero/Overview Section */
+    .hero {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary);
+        color: #fff;
+        padding: 60px 0 40px 0;
+        box-shadow: var(--shadow);
+        position: relative;
+    }
+
+    .hero-container {
+        max-width: 900px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 0 20px;
+    }
+
+    .hero-container h1 {
+        font-size: 3.2rem;
+        margin-bottom: 18px;
+        letter-spacing: 2px;
+        font-weight: 700;
+    }
+
+    .hero-container h1 span {
+        color: var(--sun-yellow);
+        display: inline-block;
+        font-size: 1.2em;
+        font-weight: 800;
+        text-shadow: 2px 2px 0 var(--accent);
+    }
+
+    .hero-container h1 div {
+        color: #fff;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+        color: #f7f9fb;
+        margin-bottom: 0;
+        line-height: 1.6;
+    }
+
+    /* Benefits Section */
+    .benefits {
+        padding: 60px 0;
+         background: #f7f9fb;
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 36px;
+    }
+
+    .section-title h2 {
+        font-size: 2.2rem;
+        text-shadow: 2px 2px 0 var(--accent);
+        color: var(--sun-yellow);
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .section-title p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 28px;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 16px;
+    }
+
+    .benefit-card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 28px 22px;
+        box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);
+        transition: transform 0.18s, box-shadow 0.18s;
+        border-top: 5px solid var(--primary);
+        text-align: center;
+        position: relative;
+        
+    }
+
+    .benefit-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 8px 32px rgba(79, 140, 255, 0.13);
+        border-top: 5px solid #ffe082;
+    }
+
+    .benefit-icon {
+        width: 54px;
+        height: 54px;
+        background: var(--secondary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+        color: var(--primary);
+        font-size: 1.7rem;
+        box-shadow: 0 2px 8px #ffe08255;
+    }
+
+    .benefit-card h3 {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+        color: #3f4d34;
+        font-weight: 700;
+    }
+
+    .benefit-card p {
+        color: var(--text-light);
+        font-size: 1.05rem;
+        margin-bottom: 0;
+    }
+
+    /* Mission & Vision Section */
+    .mission-vision {
+        padding: 60px 0;
+         background: var(--primary);
+    }
+
+    .mission-vision .mv {
+        color: white;
+    }
+    .mission-vision .mvh2 {
+        text-shadow: 2px 2px 0 var(--accent);
+        color: var(--sun-yellow);
+    }
+
+    .mv-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+        gap: 36px;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 16px;
+    }
+
+    .mv-card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 32px 24px;
+        
+        border-left: 7px solid var(--accent);
+        position: relative;
+        transition: border-color 0.2s;
+    }
+
+    .mv-card:hover {
+        border-left: 7px solid #ffe082;
+    }
+
+    .mv-card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 14px;
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    .mv-card p {
+        color: var(--text-light);
+        font-size: 1.08rem;
+        margin-bottom: 0;
+        line-height: 1.6;
+    }
+
+    /* Interactive Elements */
+    .interactive-elements {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .floating-element {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0.7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+        color: #fff;
+        animation: float 14s infinite linear;
+        box-shadow: 0 2px 12px #4f8cff33;
+        pointer-events: none;
+    }
+
+    .floating-element.math1 {
+        top: 15%;
+        left: 10%;
+        background: #ffb6b9;
+        animation-delay: 0s;
+        animation-duration: 12s;
+    }
+    .floating-element.math2 {
+        top: 60%;
+        left: 80%;
+        background: #ffe082;
+        color: #4f8cff;
+        animation-delay: 2s;
+        animation-duration: 16s;
+    }
+    .floating-element.math3 {
+        top: 30%;
+        left: 80%;
+        background: #ffb6b9;
+        animation-delay: 4s;
+        animation-duration: 13s;
+    }
+    .floating-element.math4 {
+        top: 55%;
+        left: 20%;
+        background: #232946;
+        color: #ffe082;
+        animation-delay: 6s;
+        animation-duration: 18s;
+    }
+    .floating-element.math5 {
+        top: 15%;
+        left: 60%;
+        background: var(--secondary);
+        color: white;
+        animation-delay: 8s;
+        animation-duration: 15s;
+        
+    }
+    .floating-element.math6 {
+        top: 80%;
+        left: 30%;
+        background: #ff69b4;
+        color: #fff;
+        animation-delay: 10s;
+        animation-duration: 17s;
+    }
+    
+    .floating-element.math8 {
+        top: 10%;
+        left: 50%;
+        
+        animation-delay: 14s;
+        animation-duration: 16s;
+    }
+    .floating-element.math9 {
+        top: 80%;
+        left: 75%;
+        background: #ffb6b9;
+        color: #fff;
+        animation-delay: 16s;
+        animation-duration: 19s;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px);}
+        50% { transform: translateY(-18px);}
+        100% { transform: translateY(0px);}
+    }
+
+    /* Add to your <style> */
+    .benefit-img, .mv-img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .benefit-img img, .mv-img img {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 8px #4f8cff22;
+        object-fit: cover;
+    }
+    .mv-card .mv-img img {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .hero-container h1 {
+            font-size: 2.2rem;
+        }
+
+        .benefits,
+        .mission-vision {
+            padding: 36px 0;
+        }
+
+        .mv-card,
+        .benefit-card {
+            padding: 18px 10px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .hero-container h1 {
+            font-size: 1.5rem;
+        }
+
+        .mv-container,
+        .benefits-grid {
+            gap: 16px;
+        }
+    }
+
+    /* Fade-in and slide-up scroll effect */
+.scroll-fade {
+    opacity: 0;
+    transform: scale(0.92) translateY(40px);
+    transition: opacity 0.8s cubic-bezier(.77,0,.18,1), transform 0.8s cubic-bezier(.77,0,.18,1);
+    will-change: opacity, transform;
+}
+.scroll-fade.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Add to your <sty> block */
+.edutaktika-bounce span {
+    display: inline-block;
+    color: var(--sun-yellow);
+    font-size: 1.2em;
+    font-weight: 800;
+    text-shadow: 2px 2px 0 var(--accent);
+    animation: bounce-letter 1.2s infinite;
+    animation-timing-function: cubic-bezier(.68,-0.55,.27,1.55);
+}
+.edutaktika-bounce span:nth-child(1) { animation-delay: 0s; }
+.edutaktika-bounce span:nth-child(2) { animation-delay: 0.07s; }
+.edutaktika-bounce span:nth-child(3) { animation-delay: 0.14s; }
+.edutaktika-bounce span:nth-child(4) { animation-delay: 0.21s; }
+.edutaktika-bounce span:nth-child(5) { animation-delay: 0.28s; }
+.edutaktika-bounce span:nth-child(6) { animation-delay: 0.35s; }
+.edutaktika-bounce span:nth-child(7) { animation-delay: 0.42s; }
+.edutaktika-bounce span:nth-child(8) { animation-delay: 0.49s; }
+.edutaktika-bounce span:nth-child(9) { animation-delay: 0.56s; }
+.edutaktika-bounce span:nth-child(10) { animation-delay: 0.63s; }
+.edutaktika-bounce span:nth-child(11) { animation-delay: 0.70s; }
+
+@keyframes bounce-letter {
+    0%, 100% { transform: translateY(0);}
+    20% { transform: translateY(-18px);}
+    40% { transform: translateY(0);}
+}
+
+.profile-sidebar {
+    margin-top: 20px;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE and Edge */
+}
+.profile-sidebar::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}

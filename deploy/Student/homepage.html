@@ -1,0 +1,602 @@
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user) {
+            window.location.href = "logreg.html";
+            return;
+        }
+        const uid = user.uid;
+        const snapshot = await firebase.database().ref('students/' + uid).once('value');
+        const student = snapshot.val();
+        if (!student || student.role !== "student") {
+            document.getElementById('mainContent').style.display = "none";
+            alert("Access denied.");
+            await firebase.auth().signOut();
+            window.location.href = "logreg.html";
+        } else {
+            document.getElementById('mainContent').style.display = "block";
+        }
+    });
+});
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/homepage.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+
+    <title>Home</title>
+    
+</head>
+
+<body>
+    <div id="mainContent" style="display:none;">
+        <header>
+            <div class="floating-elements">
+                <div class="floating-element"></div>
+                <div class="floating-element"></div>
+                <div class="floating-element"></div>
+                <div class="floating-element"></div>
+            </div>
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <!-- Replace your logo-text div with this for per-letter bounce -->
+                    <div class="logo-text">
+                        <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="homepage.html">Home</a></li>
+                        
+                        <li class="dropdown">
+                            <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="subject_math.html">Math</a></li>
+                                <li><a href="subject_english.html">English</a></li>
+                                <li><a href="subject_science.html">Science</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+     <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Student
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+            <!-- Firebase App (the core Firebase SDK) -->
+            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+            
+
+        <script src="../assets/js/Student Side/header.js"></script>
+
+        <!--<div class="imgs">
+            <img src="dinosaur.png" alt="">
+        </div>-->
+
+        <!-- Overview Section -->
+        <section class="hero scroll-fade">
+            <div class="hero-container">
+                <h1>
+                    <div>Welcome to 
+                      <span class="edutaktika-bounce">
+                        <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span><span>!</span>
+                      </span>
+                    </div>
+                    
+                </h1>
+                <p>
+                    EduTaktika is a web-based platform that transforms the way students
+                    learn Math, English, and Science through interactive, game-based
+                    presentations. Featuring drag-and-drop tools, visual aids, and
+                    engaging activities, it makes lessons more dynamic and accessible.
+                    Designed for elementary students, EduTaktika helps reduce learning
+                    stress and boosts confidence by turning education into a fun, hands-on
+                    experience. With a user-friendly interface and real-time feedback, the
+                    platform empowers teachers to deliver dynamic lessons that inspire
+                    active participation in core subjects.
+                </p>
+            </div>
+            <div class="interactive-elements">
+                <div class="floating-element math1"><i class="fas fa-square-root-alt"></i></div>
+                    <div class="floating-element math2"><span>π</span></div>
+                    <div class="floating-element math3"><i class="fas fa-divide"></i></div>
+                    <div class="floating-element math4"><span>Σ</span></div>
+                    <div class="floating-element math5"><i class="fas fa-equals"></i></div>
+                    <!-- Add more: -->
+                    <div class="floating-element math6"><i class="fas fa-atom"></i></div>
+                    <div class="floating-element math8"><i class="fas fa-book"></i></div>
+                    
+                    <div class="floating-element math9"><i class="fas fa-lightbulb"></i></div>
+            </div>
+        </section>
+
+        <!-- Summary Section with Example Graphs -->
+        <section class="summary-section scroll-fade" style="padding: 60px 0; background: #f7f9fb; z-index: 0;"> 
+            <div class="section-title">
+                <h2>Student Progress Summary</h2>
+                <p>
+                    Visualize your students' learning journey with interactive progress graphs.
+                </p>
+            </div>
+            <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:36px;padding:0 16px;">
+                <div class="graph-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
+                    <h3 style="color:#3f4d34;margin-bottom:10px;">Overall Completion Rate</h3>
+                    <canvas id="completionGraph" width="280" height="180"></canvas>
+                </div>
+                <div class="graph-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
+                    <h3 style="color:#3f4d34;margin-bottom:10px;">Average Scores per Subject</h3>
+                    <canvas id="subjectGraph" width="280" height="180"></canvas>
+                </div>
+                <div class="graph-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
+                    <h3 style="color:#3f4d34;margin-bottom:10px;">Monthly Activity</h3>
+                    <canvas id="monthlyGraph" width="280" height="180"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mission & Vision Section -->
+        <section class="mission-vision scroll-fade" style="z-index: 0;">
+            <div class="section-title">
+                <h2>Mission & Vision</h2>
+                <p class="mv">
+                    We are here to provide a nurturing and inclusive environment where
+                    young minds can thrive, fostering a love for learning and personal
+                    growth.
+                </p>
+            </div>
+            
+            <div class="mv-container">
+                <div class="mv-card mv-mission">
+                    <div class="mv-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135771.png" alt="Mission" />
+                    </div>
+                    <h2 class="mvh2">Our Mission</h2>
+                    <p>
+                        At Eduktaktika, our mission is to transform the learning experience
+                        by leveraging interactive, game-based tools that inspire engagement
+                        and foster a love for Math, English, and Science. We are committed
+                        to supporting both students and teachers, creating a dynamic
+                        environment where learning is fun, accessible, and empowering.
+                    </p>
+                </div>
+                <div class="mv-card mv-vision">
+                    <div class="mv-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135783.png" alt="Vision" />
+                    </div>
+                    <h2 class="mvh2">Our Vision</h2>
+                    <p>
+                        We envision a future where education is not only informative but
+                        also enjoyable, stimulating and building confidence in every
+                        student. Eduktaktika aims to be a catalyst for change in education,
+                        helping students of all backgrounds develop a lifelong passion for
+                        learning.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section class="benefits scroll-fade" style="z-index: 0;">
+            <div class="section-title">
+                <h2>Our Benefits</h2>
+                <p>
+                    With a dedicated team of experienced educators, state-of-the-art
+                    facilities, and a comprehensive curriculum, we aim to lay a strong
+                    foundation for your child's future.
+                </p>
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="Game-based" />
+                    </div>
+                    
+                    <h3>Boosts Student Engagement</h3>
+                    <p>
+                        Eduktaktika makes learning fun with interactive games and visual
+                        aids that capture student's attention. It keeps them motivated and
+                        excited about learning.
+                    </p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Stress Free" />
+                    </div>
+                    
+                    <h3>Reduces Learning Stress</h3>
+                    <p>
+                        The platform's hands-on approach helps ease anxiety, allowing
+                        students to learn at their own pace without the fear of making
+                        mistakes.
+                    </p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135789.png" alt="Teacher" />
+                    </div>
+                    <h3>Enhances Teacher Efficiency</h3>
+                    <p>
+                        Eduktaktika streamlines lesson planning with easy-to-use tools,
+                        saving teachers time and allowing them to focus on delivering
+                        quality lessons.
+                    </p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135773.png" alt="Lightbulb" />
+                    </div>
+                    <h3>Improves Subject Understanding</h3>
+                    <p>
+                        Interactive exercises and visual aids make complex topics in Math,
+                        English, and Science easier to understand and remember.
+                    </p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135792.png" alt="Active Learning" />
+                    </div>
+                    
+                    <h3>Promotes Active Learning</h3>
+                    <p>
+                        With drag-and-drop features and clickable elements, Eduktaktika
+                        encourages students to engage directly with the material, enhancing
+                        retention.
+                    </p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135766.png" alt="Secure" />
+                    </div>
+                   
+                    <h3>Supports Secure Learning</h3>
+                    <p>
+                        The platform offers a secure environment for both teachers and
+                        students, ensuring privacy and smooth access across devices.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+       <script src="../assets/js/Teacher SIde/graph.js"></script>
+
+
+       <footer>
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="edu">Eduktaktika</h3>
+                    <p>
+                        Making learning fun and engaging through interactive game-based
+                        education.
+                    </p>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="homepage.html">Home</a></li>
+                        <li><a href="subject.html">Subject</a></li>
+                      
+                        <li><a href="leaderboard.html">Leaderboard</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+                <p>© 2023 Eduktaktika. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <!-- Edit Profile Modal -->
+
+    <link rel="stylesheet" href="../CSS/editProfile.css">
+
+    <div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+            <h3 style="margin-top:0;">Edit Profile</h3>
+            <form id="editProfileForm">
+                <label>First Name:<br>
+                    <input type="text" id="edit_fname" required>
+                </label><br><br>
+                <label>Middle Name:<br>
+                    <input type="text" id="edit_mname">
+                </label><br><br>
+                <label>Last Name:<br>
+                    <input type="text" id="edit_lname" required>
+                </label><br><br>
+                <label>Grade Level:<br>
+                    <input type="text" id="edit_gradelevel" required>
+                </label><br><br>
+                <label>Section:<br>
+                    <input type="text" id="edit_section">
+                </label><br><br>
+                <div style="text-align:right;">
+                    <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../assets/js/Student Side/editProfile.js"></script>
+
+    <script>
+        const firebaseConfig = {
+                apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                authDomain: "edutaktika.firebaseapp.com",
+                databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                projectId: "edutaktika",
+                storageBucket: "edutaktika.appspot.com",
+                messagingSenderId: "676848575316",
+                appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                measurementId: "G-X3GT5TNN87"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            const auth = firebase.auth();
+    // --- ADVANCED SESSION MANAGEMENT FOR STUDENT HOMEPAGE ---
+
+    // 1. Set Firebase Auth persistence to LOCAL (default, but explicit here)
+    document.addEventListener("DOMContentLoaded", function() {
+        function checkAuthReady(cb) {
+            if (window.firebase && firebase.auth) cb();
+            else setTimeout(() => checkAuthReady(cb), 100);
+        }
+        checkAuthReady(function() {
+            // Set persistence (optional, but explicit)
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+                // 2. Listen for auth state changes
+                firebase.auth().onAuthStateChanged(function(user) {
+                    if (!user) {
+                        // Not logged in, redirect to login page
+                        window.location.href = "../index.html";
+                    } else {
+                        // 3. Optionally, check for custom claims/roles if needed
+                        user.getIdTokenResult().then(idTokenResult => {
+                            // Only allow students
+                            if (idTokenResult.claims.role && idTokenResult.claims.role !== "student") {
+                                alert("Access denied. Not a student account.");
+                                firebase.auth().signOut();
+                                window.location.href = "logreg.html";
+                            }
+                            // 4. Optionally, refresh token if needed (for long sessions)
+                            // firebase.auth().currentUser.getIdToken(true);
+                        });
+
+                        // 5. Store session info in sessionStorage/localStorage for fast UI access
+                        sessionStorage.setItem("edutaktikaUser", JSON.stringify({
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: user.displayName,
+                            photoURL: user.photoURL
+                        }));
+
+                        // 6. Optionally, update UI with user info
+                        if (document.getElementById('profileName')) {
+                            document.getElementById('profileName').textContent = user.displayName || user.email;
+                        }
+                    }
+                });
+
+                // 7. Listen for storage events (multi-tab logout)
+                window.addEventListener('storage', function(e) {
+                    if (e.key === 'firebase:authUser:' + firebase.app().options.apiKey + ':[DEFAULT]' && !e.newValue) {
+                        // User logged out in another tab
+                        window.location.href = "../index.html";
+                    }
+                });
+            });
+        });
+    });
+
+    // Fetch and display student info in the profile sidebarh
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            firebase.database().ref('students/' + user.uid).once('value').then(function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('profileName').textContent = (data.fname || '') + ' ' + (data.lname || '');
+                    document.getElementById('profileId').textContent = data.id || user.uid;
+                    document.getElementById('profileFirstName').textContent = data.fname || '';
+                    document.getElementById('profileMiddleName').textContent = data.mname || '';
+                    document.getElementById('profileLastName').textContent = data.lname || '';
+                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileSection').textContent = data.section || '-';
+                    document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "student");
+                }
+                if (data.address) {
+                    document.getElementById('profileAddressStreet').textContent = data.address.street || '-';
+                    document.getElementById('profileAddressBarangay').textContent = data.address.barangay || '-';
+                    document.getElementById('profileAddressCity').textContent = data.address.city || '-';
+                    document.getElementById('profileAddressProvince').textContent = data.address.province || '-';
+                    document.getElementById('profileAddressZip').textContent = data.address.zip || '-';
+                    document.getElementById('profileAddressRegion').textContent = data.address.region || '-';
+                }
+                
+            });
+        }
+    });
+    </script>
+
+    <style>
+        nav ul {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+    }
+    nav ul li {
+        list-style: none;
+        margin: 0 10px;
+        position: relative;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    nav ul li a, nav ul li .dropbtn {
+        display: flex;
+        align-items: center;
+        height: 48px; /* Match your nav height */
+        line-height: 48px;
+        padding: 0 18px;
+        color: #2d3923;
+        text-decoration: none;
+        font-size: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    nav ul li .dropdown-content {
+        display: none;
+        position: absolute;
+        background: #fff;
+        min-width: 120px;
+        box-shadow: 0 4px 16px #0002;
+        z-index: 1000;
+        border-radius: 8px;
+        padding: 0;
+        margin: 0;
+        top: 100%;
+        left: 0;
+    }
+    nav ul li .dropdown-content li {
+        list-style: none;
+        border-bottom: 1px solid #eee;
+    }
+    nav ul li .dropdown-content li:last-child {
+        border-bottom: none;
+    }
+    nav ul li .dropdown-content a {
+        color:  18px;
+        color: #2d3923;
+        padding: 10px 20px;
+        display: block;
+        text-decoration: none;
+        border-radius: 0;
+        transition: background 0.2s;
+        height: auto;
+        line-height: normal;
+    }
+    nav ul li .dropdown-content a:hover {
+        background: #f0f0f0;
+    }
+    nav ul li.dropdown:hover .dropdown-content {
+        display: block;
+    }
+    </style>
+
+            <script src="../assets/js/Student Side/profile.js"></script>
+</body>
+
+</html>

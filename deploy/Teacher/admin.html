@@ -1,0 +1,627 @@
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user) {
+            window.location.href = "logreg.html";
+            return;
+        }
+        const uid = user.uid;
+        const snap = await firebase.database().ref('admins/' + uid).once('value');
+        const admin = snap.val();
+        if (!admin || admin.role !== "admin") {
+            document.getElementById('mainContent').style.display = "none";
+            alert("Access denied.");
+            await firebase.auth().signOut();
+            window.location.href = "logreg.html";
+        } else {
+            document.getElementById('mainContent').style.display = "block";
+            // Show Gmail and role in the dropdown
+            document.getElementById('adminEmail').textContent = admin.email || user.email;
+            document.getElementById('adminUsername').textContent = '@' + (admin.role || 'admin');
+        }
+    });
+});
+</script>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Teacher Approvals</title>
+    <style>
+        table { border-collapse: collapse; width: 90%; margin: 30px auto; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background: #2e8b57;; color: #fff; }
+        .approved { color: green; font-weight: bold; }
+        .pending { color: orange; font-weight: bold; }
+        button { padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; }
+        .approve { background: #4f8cff; color: #fff; }
+        .reject { background: #ffb6b9; color: #232946; }
+        .delete { background: #e53935; color: #fff; }
+        .review { background: #ffd700; color: #232946; }
+        /* Modal styles */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4);
+            align-items: center; justify-content: center;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px 36px;
+            min-width: 320px;
+            max-width: 95vw;
+            box-shadow: 0 8px 32px #0003;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px; right: 18px;
+            background: #eee;
+            border: none;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #4f8cff;
+        }
+        .modal-content div {
+            margin-bottom: 10px;
+            font-size: 1.07rem;
+        }
+        .modal-label {
+            font-weight: bold;
+            color: #232946;
+        }
+        /* Admin bar styles */
+        .admin-bar {
+            position: fixed;
+            top: 0; right: 0;
+            z-index: 1;
+            padding: 0 32px 0 0;
+            width: 100vw;
+            height: 70px;
+            background:#2e8b57;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            box-shadow: 0 2px 12px #0002;
+        }
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-icon-btn {
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.1rem;
+            color: #2e8b57;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #ffd70055;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .admin-icon-btn:hover {
+            background: #ffd700;
+            color: #232946;
+            box-shadow: 0 4px 16px #4f8cff44;
+        }
+        .admin-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 62px;
+            background: #fff;
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px #0002;
+            padding: 18px 22px 12px 22px;
+            z-index: 10001;
+            text-align: left;
+        }
+        .admin-dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .admin-dropdown-content .admin-email,
+        .admin-dropdown-content .admin-username {
+            font-size: 1.05rem;
+            color: #232946;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+        .admin-dropdown-content .admin-username {
+            color: #4f8cff;
+            font-weight: bold;
+        }
+        .admin-dropdown-content .logout-btn {
+            width: 100%;
+            background: #ffd700;
+            color: rgb(0, 0, 0);
+            border: none;
+            padding: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.08rem;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px #ffd70044;
+            letter-spacing: 1px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .admin-dropdown-content .logout-btn:hover {
+            background: #ff0000;
+            color: #ffffff;
+        }
+        body { padding-top: 80px; }
+
+        /* Admin modal styles */
+        .admin-modal-bg {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.35);
+            align-items: center; justify-content: center;
+        }
+        .admin-modal-card {
+            background: linear-gradient(180deg, #ffe6f7 0%, #e0eaff 100%);
+            border-radius: 28px;
+            box-shadow: 0 4px 24px rgba(79,140,255,0.10);
+            max-width: 400px;
+            width: 95%;
+            padding: 36px 24px 24px 24px;
+            text-align: center;
+            position: relative;
+            font-family: 'Baloo 2', cursive, Arial, sans-serif;
+            animation: sidebarDrop 0.5s cubic-bezier(.77,0,.18,1);
+        }
+        .admin-modal-card .close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 1.7rem;
+            color: #ff69b4;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .admin-modal-card .close-btn:hover {
+            color: #2e8b57;
+        }
+        .admin-modal-card .profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 420px;
+            max-height: 420px;           /* Limit height for scroll */
+            overflow-y: auto;            /* Make content scrollable */
+            border-radius: 18px;         /* Add border radius */
+            background: #f7f9fb;         /* Optional: subtle background for contrast */
+            padding: 10px 0;             /* Optional: inner padding */
+            scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none; 
+        }
+        .admin-modal-card .profile-info::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}
+        .admin-modal-card .profile-info > div {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px #e0eaff33;
+            padding: 7px 14px;
+            width: 100%;
+            gap: 8px;
+            font-size: 1.05rem;
+            color: #3f4d34;
+            margin: 0 auto;
+            flex-wrap: nowrap;
+            min-height: 32px;
+            overflow-x: auto; /* Allow horizontal scroll for long content */
+        }
+        .admin-modal-card .profile-info .modal-label {
+            min-width: 110px;
+            color: #4faaff;
+            font-weight: 600;
+            font-size: 1.08rem;
+            flex-shrink: 0;
+        }
+        .admin-modal-card .profile-info span:not(.modal-label) {
+            margin-left: 8px;
+            font-weight: 600;
+            color: #3f4d34;
+            font-family: 'Baloo 2', cursive;
+            white-space: nowrap;
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        #teachersTable {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px #0001;
+    overflow: hidden;
+}
+#teachersTable th, #teachersTable td {
+    border: none;
+}
+#teachersTable th {
+    background: var(--primary, #2e8b57);
+    color: #fff;
+    font-size: 1.08rem;
+    letter-spacing: 1px;
+}
+#teachersTable tbody tr {
+    transition: background 0.18s;
+}
+#teachersTable tbody tr:hover {
+    background: #e0ffe6;
+}
+#teachersTable td {
+    background: #fff;
+    font-size: 1.05rem;
+    vertical-align: middle;
+}
+
+.review {
+    font-weight: 600;
+    border: none;
+    background: #ffd700;
+    color: #232946;
+    border-radius: 8px;
+    padding: 6px 18px;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+.review:hover {
+    background: #ff69b4;
+    color: #fff;
+}
+/* Hide action buttons by default */
+.action-btns button {
+    display: none;
+}
+
+/* Show on hover of the Action cell */
+td:hover .action-btns button {
+    display: inline-block;
+    margin: 0 2px;
+}
+
+.action-btns {
+    position: relative;
+    min-width: 120px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btns .action-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #ffd700;
+    color: #232946;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #ffd70033;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 1;
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.action-btns .approve,
+.action-btns .reject {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px) scale(0.95);
+    transition: opacity 0.25s, transform 0.25s;
+    margin: 0 4px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 8px #ffd70033;
+    padding: 7px 16px;
+}
+
+.action-btns .approve {
+    background: #4f8cff;
+    color: #fff;
+    border: 2px solid #4f8cff;
+}
+.action-btns .approve:hover {
+    background: #ffd700;
+    color: #232946;
+    border-color: #ffd700;
+}
+
+.action-btns .reject {
+    background: #ffb6b9;
+    color: #232946;
+    border: 2px solid #ffb6b9;
+}
+.action-btns .reject:hover {
+    background: #ff2323;
+    color: #fff;
+    border-color: #ff2323;
+}
+
+/* On hover, hide Action button and show Approve/Reject smoothly */
+td:hover .action-btns .action-main,
+.action-btns:focus-within .action-main {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+td:hover .action-btns .approve,
+td:hover .action-btns .reject,
+.action-btns:focus-within .approve,
+.action-btns:focus-within .reject {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+/* Optional: highlight Action cell on hover */
+#teachersTable td:nth-child(8):hover {
+    background: #fffbe6;
+    box-shadow: 0 2px 12px #ffd70055;
+    transition: background 0.2s, box-shadow 0.2s;
+    position: relative;
+    z-index: 2;
+}
+    </style>
+</head>
+<body>
+    <div id="mainContent" style="display:none;">
+    <!-- Admin bar with icon and dropdown -->
+    <div class="admin-bar">
+        <div class="admin-dropdown">
+            <button class="admin-icon-btn" id="adminDropdownBtn" title="Admin">
+                <i class="fas fa-user-shield"></i>
+            </button>
+            <div class="admin-dropdown-content" id="adminDropdownContent">
+                <div class="admin-email" id="adminEmail">admin@email.com</div>
+                <div class="admin-username" id="adminUsername">@admin</div>
+                <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="text-align:center;">Teacher Account Approvals</h2>
+    <table id="teachersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Grade Level</th>
+                <th>Section</th>
+                <th>Students</th> <!-- NEW COLUMN -->
+                <th>Status</th>
+                <th>Action</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be inserted here by JS -->
+        </tbody>
+    </table>
+
+    <!-- Modal for review -->
+    <div class="admin-modal-bg" id="reviewModal">
+        <div class="admin-modal-card">
+            <button class="close-btn" onclick="closeReviewModal()">&times;</button>
+            <div style="display:flex;flex-direction:column;align-items:center;">
+                <img class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=teacher" alt="Teacher Avatar" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin-bottom:10px;">
+            </div>
+            <div class="profile-name" id="modalTeacherName" style="font-size:1.3em;font-family:'Baloo 2',cursive;color:#2e8b57;margin-bottom:2px;text-align:center;">Teacher Name</div>
+            <div class="profile-role" style="color:#2e8b57;font-weight:700;font-size:1.05rem;margin-bottom:14px;letter-spacing:1px;text-align:center;">
+                Teacher
+            </div>
+            <div class="profile-info" id="modalContent" style="width:100%;max-width:420px;margin:0 auto 0 auto;">
+                <!-- Details will be filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+    // Your Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+        authDomain: "edutaktika.firebaseapp.com",
+        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+        projectId: "edutaktika",
+        storageBucket: "edutaktika.appspot.com",
+        messagingSenderId: "676848575316",
+        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+        measurementId: "G-X3GT5TNN87"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Admin dropdown logic
+    document.getElementById('adminDropdownBtn').onclick = function() {
+        document.getElementById('adminDropdownContent').classList.toggle('show');
+    };
+    window.addEventListener('click', function(e) {
+        if (!document.getElementById('adminDropdownBtn').contains(e.target) &&
+            !document.getElementById('adminDropdownContent').contains(e.target)) {
+            document.getElementById('adminDropdownContent').classList.remove('show');
+        }
+    });
+
+    // Remove session check: anyone can view and interact
+    document.getElementById('adminEmail').textContent = "admin@email.com";
+    document.getElementById('adminUsername').textContent = "@admin";
+
+    function logoutAdmin() {
+        firebase.auth().signOut().then(() => {
+            window.location.href = "logreg.html";
+        });
+    }
+
+    // Load teachers from Firebase
+function loadTeachers() {
+    // Fetch all students first
+    db.ref('students').once('value').then(studentSnap => {
+        const students = [];
+        studentSnap.forEach(child => {
+            students.push(child.val());
+        });
+
+        // Then fetch all teachers
+        db.ref('teachers').once('value').then(snapshot => {
+            const tbody = document.querySelector('#teachersTable tbody');
+            tbody.innerHTML = '';
+            snapshot.forEach(child => {
+                const t = child.val();
+                // Count students in the same section as this teacher
+                const studentCount = students.filter(s => s.section === t.section).length;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.id || ''}</td>
+                    <td>
+                        <button class="review" onclick="reviewTeacher('${child.key}')">${(t.fname || '') + ' ' + (t.lname || '')}</button>
+                    </td>
+                    <td>${t.email || ''}</td>
+                    <td>${t.grade || ''}</td>
+                    <td>${t.section || ''}</td>
+                    <td>${studentCount}</td>
+                    <td>
+                        ${t.approved ? '<span class="approved">Approved</span>' : '<span class="pending">Pending</span>'}
+                    </td>
+                   <td>
+                        <div class="action-btns">
+                            ${!t.approved ? `
+                                <button class="action-main" title="Take Action"><i class="fas fa-ellipsis-h"></i> Action</button>
+                                <button class="approve" onclick="approveTeacher('${child.key}')">Approve</button>
+                                <button class="reject" onclick="rejectTeacher('${child.key}')">Reject</button>
+                            ` : '<span style="color:#aaa;">—</span>'}
+                        </div>
+                    </td>
+                    <td>
+                        <button class="delete" onclick="deleteTeacher('${child.key}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    });
+}
+
+    // Approve teacher
+    function approveTeacher(key) {
+        const btn = document.querySelector(`button.approve[onclick="approveTeacher('${key}')"]`);
+        const tr = btn ? btn.closest('tr') : null;
+
+        db.ref('teachers/' + key).update({ 
+            approved: true,
+            approvedAt: new Date().toISOString()
+        })
+            .then(() => {
+                if (tr) {
+                    tr.querySelector('td:nth-child(6)').innerHTML = '<span class="approved">Approved</span>';
+                    tr.querySelector('td:nth-child(7)').innerHTML = '<span style="color:#aaa;">—</span>';
+                }
+                alert('Teacher approved!');
+            })
+            .catch(err => alert('Error approving teacher: ' + err.message));
+    }
+
+    // Reject (delete) teacher
+    function rejectTeacher(key) {
+        if (confirm('Reject and delete this teacher?')) {
+            db.ref('teachers/' + key).remove()
+                .then(() => {
+                    alert('Teacher rejected and deleted.');
+                    loadTeachers();
+                })
+                .catch(err => alert('Error deleting teacher: ' + err.message));
+        }
+    }
+
+    // Delete teacher (separate from reject, always available)
+    function deleteTeacher(key) {
+        if (confirm('Delete this teacher account?')) {
+            db.ref('teachers/' + key).remove()
+                .then(() => {
+                    alert('Teacher deleted.');
+                    loadTeachers();
+                })
+                .catch(err => alert('Error deleting teacher: ' + err.message));
+        }
+    }
+
+    // Review teacher (show modal)
+    function reviewTeacher(key) {
+        db.ref('teachers/' + key).once('value').then(snapshot => {
+            const t = snapshot.val();
+            if (!t) return;
+            document.getElementById('modalTeacherName').textContent = `${(t.fname || '')} ${(t.mname || '')} ${(t.lname || '')}`;
+            let html = `
+                <div><span class="modal-label">ID:</span> <span>${t.id || ''}</span></div>
+                <div><span class="modal-label">First Name:</span> <span>${t.fname || ''}</span></div>
+                <div><span class="modal-label">Middle Name:</span> <span>${t.mname || ''}</span></div>
+                <div><span class="modal-label">Last Name:</span> <span>${t.lname || ''}</span></div>
+                <div><span class="modal-label">Email:</span> <span>${t.email || ''}</span></div>
+                <div><span class="modal-label">Grade Level:</span> <span>${t.grade || ''}</span></div>
+                <div><span class="modal-label">Section:</span> <span>${t.section || ''}</span></div>
+                <div><span class="modal-label">Address:</span> <span>${t.address || ''}</span></div>
+                <div><span class="modal-label">Gender:</span> <span>${t.gender || ''}</span></div>
+                <div><span class="modal-label">Age:</span> <span>${t.age || ''}</span></div>
+                <div><span class="modal-label">School Year:</span> <span>${t.school_year || ''}</span></div>
+                <div><span class="modal-label">Status:</span> <span>${t.approved ? '<span class="approved">Approved</span>' : '<span class="pending">Pending</span>'}</span></div>
+                <div><span class="modal-label">Registered:</span> <span>${t.registeredAt ? new Date(t.registeredAt).toLocaleString() : '—'}</span></div>
+                <div><span class="modal-label">Approved At:</span> <span>${t.approvedAt ? new Date(t.approvedAt).toLocaleString() : '—'}</span></div>
+            `;
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('reviewModal').style.display = 'flex';
+        });
+    }
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+    }
+
+    // Initial load
+    loadTeachers();
+    </script>
+    </div>
+</body>
+</html>
