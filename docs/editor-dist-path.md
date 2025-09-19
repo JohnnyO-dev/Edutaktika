@@ -27,11 +27,11 @@ Use `/editor/` when:
 - Relying on SPA redirects (Netlify redirect rules already reference lowercase `/editor/*`).
 
 ## Subject Page Navigation
-`Teacher/subject_math.html` now sends users to:
-- Local development: `http://localhost:5173/?subject=subject_math` (Vite dev server)
-- Production: `/Editor/dist/index.html?subject=subject_math`
+All Teacher and Admin subject pages now send users to:
+- Local development: `http://localhost:5173/?subject=<subject_id>` (Vite dev server)
+- Production: `/Editor/dist/index.html?subject=<subject_id>`
 
-If you also want other subject pages to follow this pattern, replicate the updated IIFE script block.
+This was standardized (commit: "feat: route all Create Lesson buttons to /Editor/dist/index.html with subject param").
 
 ## Adding Redirect (Optional)
 If you later want `/Editor/*` paths to behave like the lowercase SPA route (e.g., deep linking inside the editor bundle), you can add this to `netlify.toml`:
