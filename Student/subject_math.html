@@ -1,0 +1,828 @@
+ <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snapshot = await firebase.database().ref('students/' + uid).once('value');
+            const student = snapshot.val();
+            if (!student || student.role !== "student") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+            }
+        });
+    });
+    </script>
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/subject.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <title>Math</title>
+    <style>
+        nav ul {
+            display: flex;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            list-style: none;
+            margin: 0 10px;
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        nav ul li a, nav ul li .dropbtn {
+            display: flex;
+            align-items: center;
+            height: 48px;
+            line-height: 48px;
+            padding: 0 18px;
+            color: #2d3923;
+            text-decoration: none;
+            font-size: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        nav ul li .dropdown-content {
+            display: none;
+            position: absolute;
+            background: #fff;
+            min-width: 120px;
+            box-shadow: 0 4px 16px #0002;
+            z-index: 1000;
+            border-radius: 8px;
+            padding: 0;
+            margin: 0;
+            top: 100%;
+            left: 0;
+        }
+        nav ul li .dropdown-content li {
+            list-style: none;
+            border-bottom: 1px solid #eee;
+        }
+        nav ul li .dropdown-content li:last-child {
+            border-bottom: none;
+        }
+        nav ul li .dropdown-content a {
+            color: #2d3923;
+            padding: 10px 20px;
+            display: block;
+            text-decoration: none;
+            border-radius: 0;
+            transition: background 0.2s;
+            height: auto;
+            line-height: normal;
+        }
+        nav ul li .dropdown-content a:hover {
+            background: #f0f0f0;
+        }
+        nav ul li.dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="mainContent" style="display:none;">
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                   <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+     <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Student
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-sidebar {
+    margin-top: 20px;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE and Edge */
+}
+.profile-sidebar::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}
+</style>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
+    <script src="../assets/js/Student Side/header.js"></script>
+
+    <div class="container">
+        <div class="quarter-nav">
+            <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
+            <div class="quarter-tab" data-quarter="2">Quarter 2</div>
+            <div class="quarter-tab" data-quarter="3">Quarter 3</div>
+            <div class="quarter-tab" data-quarter="4">Quarter 4</div>
+            <div class="quarter-tab" data-quarter="5" style="margin-left: auto;">Quizzes</div>
+            <div class="quarter-tab" data-quarter="assessments">Assessments</div>
+        </div>
+
+        <div class="quarter-section active" id="quarter-1">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 1: <span class="bounce-word"><span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span></span></h2>
+            </div>
+            <div class="lessons-container"></div>
+            <!-- YouTube Lessons (auto-fetched) -->
+            <div id="youtube-lessons" style="margin-top: 20px;">
+                <div class="quarter-title" style="align-items:center; gap:10px;">
+                    <i class="fab fa-youtube"></i>
+                    <h3 style="margin:0;">Video Lessons</h3>
+                </div>
+                <div class="lessons-container">
+                    <div>Loading YouTube lessons…</div>
+                </div>
+            </div>
+        </div>
+        <div class="quarter-section" id="quarter-2">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 2: <span class="bounce-word"><span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span></span></h2>
+            </div>
+            <div class="lessons-container"></div>
+        </div>
+        <div class="quarter-section" id="quarter-3">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 3: Decimals & Percentages</h2>
+            </div>
+            <div class="lessons-container"></div>
+        </div>
+        <div class="quarter-section" id="quarter-4">
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Quarter 4: Geometry & Measurement</h2>
+            </div>
+            <div class="lessons-container"></div>
+        </div>
+
+        <!-- Quizzes panel -->
+        <div class="quarter-section" id="quarter-5">
+            <div class="quarter-title">
+                <i class="fas fa-gamepad"></i>
+                <h2>Quizzes</h2>
+            </div>
+            <div class="lessons-container" id="quizzesContainer"></div>
+        </div>
+
+        <!-- Assessments panel -->
+        <div class="quarter-section" id="quarter-assessments">
+            <div class="quarter-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Summative Assessments</h2>
+            </div>
+            <div class="lessons-container" id="assessmentsContainer">
+                <!-- Assessment cards injected here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3 class="edu">Eduktaktika</h3>
+                <p>Making learning fun and engaging through interactive game-based education.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="homepage.php">Home</a></li>
+                    <li><a href="subject.php">Subject</a></li>
+                    <li><a href="studentlist.php">Student</a></li>
+                    <li><a href="leaderboard.php">Leaderboard</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>© 2023 Eduktaktika. All rights reserved.</p>
+        </div>
+    </footer>
+
+     <script src="../assets/js/Student Side/subject.js"></script>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+        authDomain: "edutaktika.firebaseapp.com",
+        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+        projectId: "edutaktika",
+        storageBucket: "edutaktika.appspot.com",
+        messagingSenderId: "676848575316",
+        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+        measurementId: "G-X3GT5TNN87"
+    };
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            // Get student info
+            const studentSnap = await db.ref('students/' + uid).once('value');
+            const student = studentSnap.val();
+            if (!student || !student.section) return;
+
+            // Find teacher for this section
+            let teacherUID = null;
+            const teachersSnap = await db.ref('teachers').once('value');
+            teachersSnap.forEach(tsnap => {
+                const t = tsnap.val();
+                if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+                    teacherUID = tsnap.key;
+                }
+            });
+
+            if (!teacherUID) {
+                document.querySelectorAll('.lessons-container').forEach(c => c.innerHTML = "<div>No teacher found for your section.</div>");
+                return;
+            }
+
+            for (let q = 1; q <= 4; q++) {
+                const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/subject_math/quarter-' + q).once('value');
+                const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                if (!container) continue;
+                container.innerHTML = '';
+                if (!lessonsSnap.exists()) {
+                    container.innerHTML = "<div>No lessons found for this quarter.</div>";
+                    continue;
+                }
+                lessonsSnap.forEach(lessonSnap => {
+                    const lesson = lessonSnap.val();
+                    const name = lesson.title || lessonSnap.key;
+                    const div = document.createElement('div');
+                    div.className = 'lesson-item';
+                    div.setAttribute('data-presentation', name);
+                    div.innerHTML = `
+                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                        <div class="lesson-title">
+                            <h3>${name}</h3>
+                            <p>${lesson.description || ''}</p>
+                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=subject_math&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+    });
+
+    
+// Listen for auth state
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        firebase.database().ref('students/' + user.uid).once('value').then(function(snapshot) {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('profileName').textContent = (data.fname || '') + ' ' + (data.lname || '');
+                document.getElementById('profileId').textContent = data.id || user.uid;
+                document.getElementById('profileFirstName').textContent = data.fname || '';
+                document.getElementById('profileMiddleName').textContent = data.mname || '';
+                document.getElementById('profileLastName').textContent = data.lname || '';
+                document.getElementById('profileGrade').textContent = data.gradelevel || '';
+                document.getElementById('profileSection').textContent = data.section || '';
+                document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "user");
+            }
+            // After fetching student data in the sidebar:
+if (data.address) {
+    document.getElementById('profileAddressStreet').textContent = data.address.street || '-';
+    document.getElementById('profileAddressBarangay').textContent = data.address.barangay || '-';
+    document.getElementById('profileAddressCity').textContent = data.address.city || '-';
+    document.getElementById('profileAddressProvince').textContent = data.address.province || '-';
+    document.getElementById('profileAddressZip').textContent = data.address.zip || '-';
+    document.getElementById('profileAddressRegion').textContent = data.address.region || '-';
+}
+        });
+    } else if(!user) {
+        window.location.href = "../index.html";
+    } else {
+        document.getElementById('profileName').textContent = "Not logged in";
+    }
+});
+
+// Logout logic
+document.getElementById('logoutSwitch').onclick = function() {
+    firebase.auth().signOut().then(function() {
+        window.location.href = "../index.html";
+    });
+};
+
+const subjectPage = "subject_math"; // For Math page
+// For Science: const subjectPage = "subject_science";
+// For English: const subjectPage = "subject_english";
+
+auth.onAuthStateChanged(async function(user) {
+    if (user) {
+        const uid = user.uid;
+        // Get student info
+        const studentSnap = await db.ref('students/' + uid).once('value');
+        const student = studentSnap.val();
+        if (!student || !student.section) return;
+
+        // Find teacher for this section
+        let teacherUID = null;
+        const teachersSnap = await db.ref('teachers').once('value');
+        teachersSnap.forEach(tsnap => {
+            const t = tsnap.val();
+            if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+                teacherUID = tsnap.key;
+            }
+        });
+
+        if (!teacherUID) {
+            document.querySelectorAll('.lessons-container').forEach(c => c.innerHTML = "<div>No teacher found for your section.</div>");
+            return;
+        }
+
+        for (let q = 1; q <= 4; q++) {
+            const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
+            const container = document.querySelector(`#quarter-${q} .lessons-container`);
+            if (!container) continue;
+            container.innerHTML = '';
+            if (!lessonsSnap.exists()) {
+                container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+                continue;
+            }
+            lessonsSnap.forEach(lessonSnap => {
+                const lesson = lessonSnap.val();
+                const name = lesson.title || lessonSnap.key;
+                const div = document.createElement('div');
+                div.className = 'lesson-item';
+                div.setAttribute('data-presentation', name);
+                div.innerHTML = `
+                    <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                    <div class="lesson-title">
+                        <h3>${name}</h3>
+                        <p>${lesson.description || ''}</p>
+                        <span class="lesson-badge" onclick="window.location.href='present.html?subject=${subjectPage}&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+    }
+});
+    </script>
+
+<script>
+
+
+auth.onAuthStateChanged(async function(user) {
+    if (user) {
+        const uid = user.uid;
+        // Get student info
+        const studentSnap = await db.ref('students/' + uid).once('value');
+        const student = studentSnap.val();
+        if (!student || !student.section) return;
+
+        // Find teacher for this section
+        let teacherUID = null;
+        const teachersSnap = await db.ref('teachers').once('value');
+        teachersSnap.forEach(tsnap => {
+            const t = tsnap.val();
+            if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+                teacherUID = tsnap.key;
+            }
+        });
+
+        for (let q = 1; q <= 4; q++) {
+            const container = document.querySelector(`#quarter-${q} .lessons-container`);
+            if (!container) continue;
+
+            let lessons = [];
+
+            // Only fetch lessons from teacher whose section matches
+            if (teacherUID) {
+                const teacherSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
+                if (teacherSnap.exists()) {
+                    teacherSnap.forEach(child => {
+                        const data = child.val();
+                        lessons.push({
+                            title: data.title || child.key,
+                            description: data.description || ''
+                        });
+                    });
+                }
+            }
+
+            // Sort all lessons by title
+            lessons.sort((a, b) => a.title.localeCompare(b.title));
+
+            // Render
+            if (lessons.length === 0) {
+                container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+            } else {
+                container.innerHTML = lessons.map(lesson => `
+                    <div class="lesson-item" data-presentation="${lesson.title}">
+                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                        <div class="lesson-title">
+                            <h3>${lesson.title}</h3>
+                            <p>${lesson.description}</p>
+                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=${subjectPage}&quarter=${q}&name=${encodeURIComponent(lesson.title)}'" style="cursor:pointer;">View</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+});
+</script>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <h3 style="margin-top:0;">Edit Profile</h3>
+        <form id="editProfileForm">
+            <label>First Name:<br>
+                <input type="text" id="edit_fname" required>
+            </label><br><br>
+            <label>Middle Name:<br>
+                <input type="text" id="edit_mname">
+            </label><br><br>
+            <label>Last Name:<br>
+                <input type="text" id="edit_lname" required>
+            </label><br><br>
+            <label>Grade Level:<br>
+                <input type="text" id="edit_gradelevel" required>
+            </label><br><br>
+            <label>Section:<br>
+                <input type="text" id="edit_section" required>
+            </label><br><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+    
+<script src="../assets/js/Student Side/editProfile.js"></script>
+<link rel="stylesheet" href="../CSS/editProfile.css">
+<script>
+// --- Inject Assessment Card & Score ---
+(function(){
+    const container = document.getElementById('assessmentsContainer');
+    if(!container) return;
+
+    // Create Assessment 1 card
+    const card = document.createElement('div');
+    card.className = 'lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
+        <div class="lesson-title">
+            <h3>Assessment 1: Everyday Math</h3>
+            <p>10-item real‑life math skills check.</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    // Fetch last score if user logged in
+    firebase.auth().onAuthStateChanged(function(user){
+        if(!user) return;
+        const uid = user.uid;
+        firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+            if(!snap.exists()) return;
+            let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
+            const dataObj = (typeof val === 'object') ? val : null;
+            const scoreEl = document.getElementById('a1LastScore');
+            if(scoreEl && dataObj) {
+                scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
+            } else if(scoreEl && !dataObj){
+                // If stored as direct leaf (score object)
+                const raw = snap.val();
+                if(raw && raw.score !== undefined) {
+                    scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                }
+            }
+        });
+    });
+})();
+
+// --- Inject Quiz Card & Score (Lesson 1) ---
+(function(){
+    const container = document.getElementById('quizzesContainer');
+    if(!container) return;
+    const card = document.createElement('div');
+    card.className='lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q1</div>
+        <div class="lesson-title">
+            <h3>Quiz 1: Time & Time Zones</h3>
+            <p>Drag & drop time conversion and world zones.</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q1LastScore">Last Score: -</div>
+            <div style="font-size:0.9rem;color:#444;" id="q1BestScore">Best Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user) return;
+        const uid = user.uid;
+        // Prefer global quizSummaries path
+        const summaryRef = firebase.database().ref(`quizSummaries/lesson1/${uid}`);
+        summaryRef.once('value').then(snap => {
+            if(snap.exists()){
+                const s = snap.val();
+                const lastEl = document.getElementById('q1LastScore');
+                const bestEl = document.getElementById('q1BestScore');
+                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+            } else {
+                // Fallback student path
+                firebase.database().ref(`students/${uid}/quizzes/lesson1/summary`).once('value').then(msnap => {
+                    if(!msnap.exists()) return;
+                    const s = msnap.val();
+                    const lastEl = document.getElementById('q1LastScore');
+                    const bestEl = document.getElementById('q1BestScore');
+                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+                });
+            }
+        });
+    });
+})();
+
+// --- Extend tab switching to include Assessments ---
+(function(){
+    const tabs = document.querySelectorAll('.quarter-tab');
+    const sections = document.querySelectorAll('.quarter-section');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t=>t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.getAttribute('data-quarter');
+            sections.forEach(sec => sec.classList.remove('active'));
+            if(target === 'assessments') {
+                document.getElementById('quarter-assessments').classList.add('active');
+            } else {
+                const sec = document.getElementById('quarter-' + target);
+                if(sec) sec.classList.add('active');
+            }
+        });
+    });
+})();
+
+// Extend existing assessment UI scoring display
+(function(){
+  const assessCard = document.querySelector('#assessmentsContainer .lesson-item');
+  if(!assessCard) return;
+  // Append placeholders
+  const scoreDiv = assessCard.querySelector('#a1LastScore');
+  if(scoreDiv){
+    scoreDiv.insertAdjacentHTML('afterend', `<div id="a1BestScore" style="font-size:0.9rem;color:#444;">Best Score: -</div><button id="viewAttemptsFromSubject" style="margin-top:6px;padding:4px 10px;font-size:0.75rem;border:none;background:#6d28d9;color:#fff;border-radius:6px;cursor:pointer;">View Attempts</button>`);
+  }
+
+  // Leaderboard container
+  const container = document.getElementById('assessmentsContainer');
+  const lbBox = document.createElement('div');
+  lbBox.style = 'margin-top:28px;background:#fafafa;border:1px solid #eee;padding:16px 18px;border-radius:12px;';
+  lbBox.innerHTML = `<h4 style='margin:0 0 12px 0;'>Assessment 1 Leaderboard (Top 10 by Best Score)</h4><div id='a1Leaderboard' style='font-size:0.85rem;'>Loading...</div>`;
+  container.appendChild(lbBox);
+
+  // Fetch summary + leaderboard
+  firebase.auth().onAuthStateChanged(user => {
+    if(!user) return;
+    const uid = user.uid;
+    // User summary
+    firebase.database().ref('assessmentSummaries/assessment1/' + uid).once('value', snap => {
+      if(snap.exists()){
+        const s = snap.val();
+        const lastEl = document.getElementById('a1LastScore');
+        const bestEl = document.getElementById('a1BestScore');
+        if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+        if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts} attempt${s.attempts>1?'s':''}`;
+      }
+    });
+    // Leaderboard (pull all summaries once)
+    firebase.database().ref('assessmentSummaries/assessment1').once('value', snap => {
+      const lbEl = document.getElementById('a1Leaderboard');
+      if(!snap.exists()){ lbEl.textContent = 'No scores yet.'; return; }
+      const arr = [];
+      snap.forEach(child => { const v = child.val(); arr.push({ uid: child.key, best: v.best, bestPct: v.bestPercentage, last: v.last, attempts: v.attempts || 1 }); });
+      arr.sort((a,b)=> b.best - a.best || a.attempts - b.attempts);
+      const top = arr.slice(0,10);
+      lbEl.innerHTML = top.map((r,i)=> `<div style='display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;'><span>#${i+1}</span><span>${r.uid.substring(0,6)}</span><span>${r.best}</span><span>${r.bestPct}%</span><span>${r.attempts}x</span></div>`).join('');
+    });
+  });
+
+  // Attempts modal reuse via hidden iframe open (we'll just navigate to assessment and let user click view attempts). Simpler: open assessment in new tab.
+  const btn = document.getElementById('viewAttemptsFromSubject');
+  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam.html'; }); }
+})();
+</script>
+    </div>
+ 
+<script>
+// Load latest YouTube videos for the channel handle into Quarter 1
+async function loadYouTubeVideos() {
+    const apiKey = "AIzaSyAWPWvF3BK1HPYHw36_kXSUvcf3lW38gls";
+    const handle = "@Edutaktika"; // channel handle
+    const maxResults = 10;
+
+    try {
+        // Step 1: Resolve handle to channelId
+        const channelRes = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&key=${apiKey}`
+        );
+        const channelData = await channelRes.json();
+        const target = document.querySelector('#youtube-lessons .lessons-container');
+        if (!channelData.items || !channelData.items.length) {
+            if (target) target.innerHTML = '<div>No YouTube channel found.</div>';
+            return;
+        }
+        const channelId = channelData.items[0].id.channelId;
+
+        // Step 2: Fetch latest videos for that channel
+        const res = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=${maxResults}`
+        );
+        const data = await res.json();
+
+        const container = document.querySelector('#youtube-lessons .lessons-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        (data.items || []).forEach(item => {
+            if (item.id && item.id.kind === 'youtube#video') {
+                const videoId = item.id.videoId;
+                const title = item.snippet.title;
+                const desc = item.snippet.description || '';
+                const thumb = item.snippet.thumbnails?.medium?.url || '';
+
+                const div = document.createElement('div');
+                div.className = 'lesson-item';
+                div.innerHTML = `
+                    <div class="lesson-thumbnail" style="background-image:url('${thumb}'); background-size:cover;"></div>
+                    <div class="lesson-title">
+                        <h3>${title}</h3>
+                        <p>${desc.substring(0, 80)}...</p>
+                        <span class="lesson-badge" style="cursor:pointer;"
+                            onclick="window.location.href='video.html?id=${videoId}'">Watch</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        });
+        if (!container.children.length) container.innerHTML = '<div>No recent videos found.</div>';
+    } catch (err) {
+        console.error('Error fetching YouTube videos', err);
+        const container = document.querySelector('#youtube-lessons .lessons-container');
+        if (container) container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadYouTubeVideos);
+</script>
+</body>
+</html>

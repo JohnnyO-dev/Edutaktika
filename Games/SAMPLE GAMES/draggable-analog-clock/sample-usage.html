@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Draggable Analog Clock Demo</title>
+  <link rel="stylesheet" href="draggable-analog-clock.css">
+  <style>body{font-family:sans-serif;}</style>
+</head>
+<body>
+  <h2>Draggable Analog Clock Widget Demo</h2>
+  <div id="clock-container" style="width:220px;height:260px;position:relative;"></div>
+  <div id="result"></div>
+  <button id="edit-btn">Enable Teacher Editor</button>
+  <script src="draggable-analog-clock.js"></script>
+  <script>
+    // Sample usage
+    var clock = createDraggableClock(document.getElementById('clock-container'), {
+      id: 'demo-clock',
+      targetTime: { hour: 9, minute: 30 },
+      toleranceMinutes: 2,
+      snapToMinutes: 5,
+      clockMode: '12h',
+      initialTime: { hour: 12, minute: 0 }
+    });
+    clock.onSubmit(function(state) {
+      var t = clock.getState();
+      var target = { hour: 9, minute: 30 };
+      var diff = Math.abs((t.hour * 60 + t.minute) - (target.hour * 60 + target.minute));
+      document.getElementById('result').textContent =
+        'You set: ' + t.hour + ':' + (t.minute < 10 ? '0' : '') + t.minute +
+        (diff <= 2 ? ' (Correct!)' : ' (Try again)');
+    });
+    document.getElementById('edit-btn').onclick = function() {
+      clock.enableEditor();
+    };
+  </script>
+</body>
+</html>

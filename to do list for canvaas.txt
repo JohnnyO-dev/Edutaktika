@@ -1,0 +1,135 @@
+1. Multi-Slide/Presentation Support
+Add slide navigation (next/prev/add/delete slide).
+Save/load multiple slides as a presentation.
+2. Templates
+Add pre-made slide templates for lessons, quizzes, games, etc.
+3. Lock/Unlock Objects
+Allow users to lock objects so they can’t be moved or edited accidentally.
+4. Grouping/Ungrouping
+Group multiple objects together for easier manipulation.
+5. Snap to Grid/Guides
+Add a grid or guides for precise alignment and snapping.
+6. Comments/Annotations
+Allow users to add comments or sticky notes to slides.
+7. Audio/Video Embeds
+Support adding audio or video files to slides.
+8. Transitions/Animations
+Add simple transitions or animations between slides.
+9. Export to PDF/Images
+Export slides as PDF or image files for sharing.
+10. Collaboration
+Real-time collaborative editing (multiple users editing the same canvas).
+11. History Panel
+Show a history panel for undo/redo actions.
+12. Custom Drawing Tools
+Freehand drawing, highlighting, or annotation tools.
+13. Quiz/Game Interactivity
+Add interactive elements like drag & drop, clickable areas, or answer fields.
+
+
+https://codepen.io/Coding_Journey/pen/LYPNmpe
+
+whenever a user edits and saves, their changes will be stored and automatically loaded next time they open the game
+
+
+<div id="slide-preview-bar" style="
+    position:fixed;
+    bottom:70px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:21;
+    display:flex;
+    gap:14px;
+    max-width:90vw;
+    overflow-x:auto;
+    padding:8px 0;
+    background:rgba(255,255,255,0.95);
+    border-radius:12px;
+    box-shadow:0 2px 12px #0001;
+"></div>
+
+<script>
+// Update slide preview thumbnails
+function updateSlidePreviewBar() {
+    const bar = document.getElementById('slide-preview-bar');
+    bar.innerHTML = '';
+    slides.forEach((slide, idx) => {
+        const thumb = document.createElement('div');
+        thumb.style = `
+            width: 90px; height: 56px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001;
+            border: ${idx === currentSlide ? '3px solid var(--primary)' : '2px solid #ccc'};
+            display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
+            overflow: hidden;
+        `;
+        // Render a mini canvas for preview
+        const canvasEl = document.createElement('canvas');
+        canvasEl.width = 90;
+        canvasEl.height = 56;
+        thumb.appendChild(canvasEl);
+
+        // Use Fabric.js to render preview
+        const previewCanvas = new fabric.StaticCanvas(canvasEl, { backgroundColor: '#fff', width: 90, height: 56 });
+        previewCanvas.loadFromJSON(slide, function() {
+            previewCanvas.renderAll();
+        });
+
+        // Slide number indicator
+        const num = document.createElement('span');
+        num.textContent = idx + 1;
+        num.style = 'position:absolute;top:2px;right:6px;font-size:0.95em;color:#2e8b57;font-weight:bold;';
+        thumb.appendChild(num);
+
+        // Click to jump to slide
+        thumb.onclick = function() {
+            saveCurrentSlide();
+            currentSlide = idx;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+            updateSlidePreviewBar();
+        };
+
+        // Drag to reorder
+        thumb.draggable = true;
+        thumb.ondragstart = function(e) {
+            e.dataTransfer.setData('slide-index', idx);
+            thumb.style.opacity = '0.5';
+        };
+        thumb.ondragend = function(e) {
+            thumb.style.opacity = '1';
+        };
+        thumb.ondragover = function(e) {
+            e.preventDefault();
+            thumb.style.borderColor = 'var(--accent)';
+        };
+        thumb.ondragleave = function(e) {
+            thumb.style.borderColor = idx === currentSlide ? 'var(--primary)' : '#ccc';
+        };
+        thumb.ondrop = function(e) {
+            e.preventDefault();
+            const fromIdx = Number(e.dataTransfer.getData('slide-index'));
+            if (fromIdx !== idx) {
+                // Move slide in array
+                const moved = slides.splice(fromIdx, 1)[0];
+                slides.splice(idx, 0, moved);
+                if (currentSlide === fromIdx) currentSlide = idx;
+                else if (currentSlide > fromIdx && currentSlide <= idx) currentSlide--;
+                else if (currentSlide < fromIdx && currentSlide >= idx) currentSlide++;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+                updateSlidePreviewBar();
+            }
+        };
+
+        bar.appendChild(thumb);
+    });
+}
+
+// Call after every slide change
+function updateSlideIndicator() {
+    document.getElementById('slide-indicator').textContent = `Slide ${currentSlide+1}/${slides.length}`;
+updateSlidePreviewBar();
+}
+
+// Initial call after navBar creation
+updateSlidePreviewBar();
+</script>

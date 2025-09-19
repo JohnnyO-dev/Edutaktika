@@ -1,0 +1,14 @@
+{
+  "name": "edutaktika-root",
+  "private": true,
+  "dependencies": {
+    "fabric": "^6.7.0"
+  },
+  "scripts": {
+    "build": "node scripts/build-all.js",
+    "build:clean": "rimraf deploy && node scripts/build-all.js"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1"
+  }
+}

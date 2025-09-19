@@ -1,0 +1,828 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('teachers/' + uid).once('value');
+            const teacher = snap.val();
+            if (!teacher || teacher.role !== "teacher") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+                // Set current school year and section
+                if (teacher.school_year) {
+                    document.getElementById('list_school_year').innerHTML = `<option value="${teacher.school_year}">${teacher.school_year}</option>`;
+                    document.getElementById('list_school_year').value = teacher.school_year;
+                }
+                // Immediately filter students for this teacher
+                filterAndSearchStudents();
+            }
+        });
+    });
+    </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+   <link rel="stylesheet" href="../CSS/studentlist.css">
+   <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <style>
+    .profile-sidebar {
+    margin-top: 20px;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE and Edge */
+}
+.profile-sidebar::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}
+</style>
+   
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+<div id="mainContent" style="display:none;">
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+      <div class="student-nav">
+    <div class="student-tab active" data-student="1" onclick="showSection(1)">
+        <i class="fa-solid fa-list"></i> List
+    </div>
+    
+</div>
+
+        <!-- List Section -->
+        <div class="student-section active" id="student-1">
+            
+            <div class="list-header-row">
+                  <div class="scoring-header-row" style="margin-bottom:18px;">
+                <div class="scoring-stats">
+                   <div class="stat-box">
+                        <i class="fa-solid fa-users" style="color:#ffd700;font-size:1.2em;"></i><br>
+                        Total Students<br>
+                        <span id="total_students_list" style="font-size:1.5em;">0</span>
+                    </div>
+
+                    <div class="stat-box">
+                        <i class="fa-solid fa-male" style="color:#2e8b57;font-size:1.2em;"></i><br>
+                        Male<br>
+                        <span id="total_male_list" style="font-size:1.5em;">0</span>
+                    </div>
+
+                    <div class="stat-box">
+                        <i class="fa-solid fa-female" style="color:#f8caea  ;font-size:1.2em;"></i><br>
+                        Female<br>
+                        <span id="total_female_list" style="font-size:1.5em;">0</span>
+                    </div>
+
+                </div>
+            </div>
+        
+            
+
+            <div class="filters-form" id="list-filters-form">
+
+    <select id="list_school_year" style="min-width:140px;">
+        <option value="">All School Years</option>
+        <!-- School years will be loaded here -->
+    </select>
+    <span class="search-bar" style="display:flex;align-items:center;gap:5px;">
+        <i class="fa fa-search" style="color:#ff69b4;"></i>
+        <input type="text" id="studentSearch" placeholder="Search student name..." style="background:#fff;border:2px solid #ffd700;border-radius:10px;padding:6px 9px;font-size:0.9rem;color:#2e8b57;outline:none;transition:border 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px #ffd70011;">
+    </span>
+</div>
+                
+            </div>
+
+          
+
+            <div id="list-selected-filters"></div>
+            <div id="listSection">
+                <table class="minimal-table" id="list-students-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Age</th>
+                            <th>Grade</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Students will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scoring Section -->
+        <div class="student-section" id="student-2">
+            <div class="scoring-header-row">
+                <div class="scoring-stats">
+                    <div class="stat-box">
+                        Total Students<br>
+                        <span id="total_students_list" style="font-size:1.5em;">0</span>
+                    </div>
+                    <div class="stat-box" style="background:var(--sun-yellow); color:white;">
+                        Male<br>
+                        <span id="total_male_list" style="font-size:1.3em;">0</span>
+                    </div>
+                    <div class="stat-box" style="background:var(--peach); color:white;">
+                        Female<br>
+                        <span id="total_female_list" style="font-size:1.3em;">0</span>
+                    </div>
+                </div>
+                <form class="filters-form" id="scoring-filters-form">
+                    <select id="scoring_school_year" style="min-width:140px;">
+                        <option value="">All School Years</option>
+                    </select>
+                    <select id="scoring_section" style="min-width:120px;">
+                        <option value="">All Sections</option>
+                    </select>
+                </form>
+            </div>
+            <div id="scoring-selected-filters"></div>
+            <table class="minimal-table" id="students-table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Quiz 1</th>
+                    <th>Quiz 2</th>
+                    <th>Quiz 3</th>
+                    <th>Quiz 4</th>
+                    <th>Quiz 5</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Scoring students will be loaded here -->
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <!-- Remove Modal -->
+    <div id="removeModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:center;position:relative;">
+            <h3 style="color:#ff4f4f;margin-bottom:18px;">Remove Student</h3>
+            <p id="removeModalText" style="margin-bottom:24px;">Are you sure you want to remove this student?</p>
+            <form id="removeForm" style="display:inline;">
+                <input type="hidden" id="removeStudentId">
+                <button type="button" onclick="removeStudent()" style="background:#ffb6b9;color:#232946;border:none;padding:8px 22px;border-radius:8px;cursor:pointer;font-weight:bold;">Yes, Remove</button>
+                <button type="button" onclick="closeRemoveModal()" style="background:#eee;color:#232946;border:none;padding:8px 22px;border-radius:8px;cursor:pointer;margin-left:10px;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // 1. Firebase config (replace with your own)
+   
+
+    // Utility functions
+    function showSection(num) {
+        document.getElementById('student-1').classList.toggle('active', num === 1);
+        document.getElementById('student-2').classList.toggle('active', num === 2);
+        document.querySelectorAll('.student-tab').forEach((tab, idx) => {
+            tab.classList.toggle('active', idx === num - 1);
+        });
+    }
+    function showRemoveModal(id, name) {
+        document.getElementById('removeStudentId').value = id;
+        document.getElementById('removeModalText').textContent = "Are you sure you want to remove " + name + "?";
+        document.getElementById('removeModal').style.display = 'flex';
+    }
+    function closeRemoveModal() {
+        document.getElementById('removeModal').style.display = 'none';
+    }
+    async function removeStudent() {
+        const id = document.getElementById('removeStudentId').value;
+        if (id) {
+            await db.ref('students/' + id).remove();
+            closeRemoveModal();
+            loadStudents();
+            loadScoring();
+        }
+    }
+
+    // Load dropdowns and tables
+    async function loadDropdowns() {
+        const snapshot = await db.ref('students').once('value');
+        const years = new Set();
+        const sections = new Set();
+        snapshot.forEach(child => {
+            const s = child.val();
+            if (s.school_year) years.add(s.school_year);
+            if (s.section) sections.add(s.section);
+        });
+        // Populate dropdowns
+        const yearOptions = Array.from(years).sort((a,b)=>b.localeCompare(a)).map(y => `<option value="${y}">${y}</option>`).join('');
+        const sectionOptions = Array.from(sections).sort().map(s => `<option value="${s}">${s}</option>`).join('');
+        document.getElementById('list_school_year').innerHTML = `<option value="">All School Years</option>${yearOptions}`;
+        document.getElementById('scoring_school_year').innerHTML = `<option value="">All School Years</option>${yearOptions}`;
+        document.getElementById('list_section').innerHTML = `<option value="">All Sections</option>${sectionOptions}`;
+        document.getElementById('scoring_section').innerHTML = `<option value="">All Sections</option>${sectionOptions}`;
+    }
+
+    let currentPage = 1;
+const rowsPerPage = 10;
+
+    async function loadStudents(page = 1) {
+        const sy = document.getElementById('list_school_year').value;
+        const sec = document.getElementById('list_section').value;
+        let ref = db.ref('students');
+        const snapshot = await ref.once('value');
+        let studentsArr = [];
+        snapshot.forEach(child => {
+            const s = child.val();
+            if ((sy && s.school_year !== sy) || (sec && s.section !== sec)) return;
+            studentsArr.push({ key: child.key, ...s });
+        });
+
+        // Pagination logic
+        const total = studentsArr.length;
+        const totalPages = Math.ceil(total / rowsPerPage);
+        currentPage = Math.max(1, Math.min(page, totalPages));
+        const startIdx = (currentPage - 1) * rowsPerPage;
+        const endIdx = startIdx + rowsPerPage;
+        const pageStudents = studentsArr.slice(startIdx, endIdx);
+
+        let html = '';
+        let male = 0, female = 0;
+        pageStudents.forEach(s => {
+            if (s.gender === 'Male') male++;
+            if (s.gender === 'Female') female++;
+            html += `<tr>
+                <td>${s.id}</td>
+                <td>
+                    <a href="#" style="color:#2e8b57;font-weight:600;text-decoration:underline;cursor:pointer;"
+                       onclick="showStudentDetails('${s.key}')">
+                       ${s.fname || ''} ${s.mname || ''} ${s.lname || ''}
+                    </a>
+                </td>
+                <td>${s.email || ''}</td>
+                <td>${s.age || ''}</td>
+                <td>${s.gradelevel || ''}</td>
+                <td>
+                    <button type="button" class="mini-btn remove"
+                        onclick="showRemoveModal('${s.key}', '${(s.fname || '') + ' ' + (s.lname || '')}')">
+                        Remove
+                    </button>
+                </td>
+            </tr>`;
+        });
+        if (!html) html = `<tr><td colspan="6" style="text-align:center;">No students found.</td></tr>`;
+        document.querySelector('#list-students-table tbody').innerHTML = html;
+        document.getElementById('total_students_list').textContent = total;
+        document.getElementById('total_male_list').textContent = male;
+        document.getElementById('total_female_list').textContent = female;
+
+        // Pagination controls
+        let paginationHtml = '';
+        if (totalPages > 1) {
+            paginationHtml += `<div class="pagination">`;
+            if (currentPage > 1) {
+                paginationHtml += `<button onclick="loadStudents(${currentPage - 1})">&laquo; Prev</button>`;
+            }
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHtml += `<button onclick="loadStudents(${i})"${i === currentPage ? ' class="active"' : ''}>${i}</button>`;
+            }
+            if (currentPage < totalPages) {
+                paginationHtml += `<button onclick="loadStudents(${currentPage + 1})">Next &raquo;</button>`;
+            }
+            paginationHtml += `</div>`;
+        }
+        document.getElementById('listSection').insertAdjacentHTML('beforeend', paginationHtml);
+    }
+
+    async function loadScoring() {
+    // Get teacher's section and school year from Firebase
+    const teacherSnap = await db.ref('teachers/' + firebase.auth().currentUser.uid).once('value');
+    const teacher = teacherSnap.val();
+    const teacherSection = teacher && teacher.section ? teacher.section : null;
+    const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
+
+    let ref = db.ref('students');
+    const snapshot = await ref.once('value');
+    let html = '';
+    let total = 0, male = 0, female = 0;
+
+    snapshot.forEach(child => {
+        const s = child.val();
+        // Only show students with the same section and school year as the teacher
+        if (teacherSection && s.section !== teacherSection) return;
+        if (teacherSY && s.school_year !== teacherSY) return;
+        total++;
+        if (s.gender === 'Male') male++;
+        if (s.gender === 'Female') female++;
+        html += `<tr>
+            <td>${s.id}</td>
+            <td>${s.fname || ''} ${s.mname || ''} ${s.lname || ''}</td>
+            <td>${s.quiz1 || ''}</td>
+            <td>${s.quiz2 || ''}</td>
+            <td>${s.quiz3 || ''}</td>
+            <td>${s.quiz4 || ''}</td>
+            <td>${s.quiz5 || ''}</td>
+        </tr>`;
+    });
+    if (!html) html = `<tr><td colspan="7" style="text-align:center;">No students found.</td></tr>`;
+    document.querySelector('#students-table tbody').innerHTML = html;
+    // FIX: Use the correct IDs for scoring stats
+    document.getElementById('total_students_list').textContent = total;
+    document.getElementById('total_male_list').textContent = male;
+    document.getElementById('total_female_list').textContent = female;
+}
+
+    // Filter events
+    document.addEventListener('DOMContentLoaded', async function() {
+        await loadDropdowns();
+        await loadStudents();
+        await loadScoring();
+
+        document.getElementById('list_school_year').addEventListener('change', loadStudents);
+        document.getElementById('list_section').addEventListener('change', loadStudents);
+        document.getElementById('scoring_school_year').addEventListener('change', loadScoring);
+        document.getElementById('scoring_section').addEventListener('change', loadScoring);
+    });
+
+    // Place this script after your loadStudents() function
+
+// Add search functionality and filter by school year only
+document.addEventListener('DOMContentLoaded', function() {
+    const schoolYearSelect = document.getElementById('list_school_year');
+    const searchInput = document.getElementById('studentSearch');
+    schoolYearSelect.addEventListener('change', filterAndSearchStudents);
+    searchInput.addEventListener('input', filterAndSearchStudents);
+});
+
+async function filterAndSearchStudents() {
+    const sy = document.getElementById('list_school_year').value;
+    const search = document.getElementById('studentSearch').value.toLowerCase();
+    let ref = db.ref('students');
+    const snapshot = await ref.once('value');
+    let html = '';
+
+    // Get teacher's section and school year from Firebase
+    const teacherSnap = await db.ref('teachers/' + firebase.auth().currentUser.uid).once('value');
+    const teacher = teacherSnap.val();
+    const teacherSection = teacher && teacher.section ? teacher.section : null;
+    const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
+
+    // --- Calculate stats (without search) ---
+    let total = 0, male = 0, female = 0;
+    snapshot.forEach(child => {
+        const s = child.val();
+        if (teacherSection && s.section !== teacherSection) return;
+        if (teacherSY && s.school_year !== teacherSY) return;
+        total++;
+        if (s.gender === 'Male') male++;
+        if (s.gender === 'Female') female++;
+    });
+    document.getElementById('total_students_list').textContent = total;
+    document.getElementById('total_male_list').textContent = male;
+    document.getElementById('total_female_list').textContent = female;
+
+    // --- Build table (with search) ---
+    snapshot.forEach(child => {
+        const s = child.val();
+        if (teacherSection && s.section !== teacherSection) return;
+        if (teacherSY && s.school_year !== teacherSY) return;
+        const fullName = `${s.fname || ''} ${s.mname || ''} ${s.lname || ''}`.toLowerCase();
+        if (search && !fullName.includes(search)) return;
+        html += `<tr>
+            <td>${s.id}</td>
+            <td>
+                <a href="#" style="color:#2e8b57;font-weight:600;text-decoration:underline;cursor:pointer;"
+                   onclick="showStudentDetails('${child.key}')">
+                   ${s.fname || ''} ${s.mname || ''} ${s.lname || ''}
+                </a>
+            </td>
+            <td>${s.email || ''}</td>
+            <td>${s.age || ''}</td>
+            <td>${s.gradelevel || ''}</td>
+            <td>
+                <button type="button" class="mini-btn remove"
+                    onclick="showRemoveModal('${child.key}', '${(s.fname || '') + ' ' + (s.lname || '')}')">
+                    Remove
+                </button>
+            </td>
+        </tr>`;
+    });
+    if (!html) html = `<tr><td colspan="6" style="text-align:center;">No students found.</td></tr>`;
+    document.querySelector('#list-students-table tbody').innerHTML = html;
+}
+
+// Add event listener for search bar
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('studentSearch').addEventListener('input', filterAndSearchStudents);
+});
+
+function closeStudentDetailsModal() {
+    document.getElementById('studentDetailsModal').style.display = 'none';
+}
+
+
+
+async function showStudentDetails(studentId) {
+    const snap = await db.ref('students/' + studentId).once('value');
+    const s = snap.val();
+    if (!s) return;
+
+    document.getElementById('studentDetailsName').textContent = `${s.fname || ''} ${s.mname || ''} ${s.lname || ''}`;
+    document.getElementById('studentDetailsId').textContent = s.id || '-';
+    document.getElementById('studentDetailsEmail').textContent = s.email || '-';
+    document.getElementById('studentDetailsAge').textContent = s.age || '-';
+    document.getElementById('studentDetailsGender').textContent = s.gender || '-';
+    document.getElementById('studentDetailsGrade').textContent = s.gradelevel || '-';
+    document.getElementById('studentDetailsSection').textContent = s.section || '-';
+    document.getElementById('studentDetailsSY').textContent = s.school_year || '-';
+    document.getElementById('studentPoints').textContent = s.points !== undefined ? s.points : 0;
+
+    // Optionally set avatar if you store a photoURL
+    document.getElementById('studentDetailsAvatar').src = s.photoURL || "https://api.dicebear.com/7.x/bottts/svg?seed=student";
+
+    document.getElementById('studentDetailsModal').style.display = 'flex';
+}
+    
+    
+    
+    </script>
+
+    
+<footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3 class="edu">Eduktaktika</h3>
+                <p>
+                    Making learning fun and engaging through interactive game-based
+                    education.
+                </p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="homepage.php">Home</a></li>
+                    <li><a href="subjectTeacher.php">Subject</a></li>
+                    <li><a href="studentlistTeacher.php">Student</a></li>
+                    <li><a href="leaderboardTeacher.php">Leaderboard</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>© 2023 Eduktaktika. All rights reserved.</p>
+        </div>
+    </footer>
+
+        <!-- Edit Profile Modal -->
+
+<link rel="stylesheet" href="../CSS/editProfile.css">
+
+<div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <h3 style="margin-top:0;">Edit Profile</h3>
+        <form id="editProfileForm">
+            <label>First Name:<br>
+                <input type="text" id="edit_fname" required>
+            </label><br><br>
+            <label>Middle Name:<br>
+                <input type="text" id="edit_mname">
+            </label><br><br>
+            <label>Last Name:<br>
+                <input type="text" id="edit_lname" required>
+            </label><br><br>
+            <label>Grade Level:<br>
+                <input type="text" id="edit_gradelevel">
+            </label><br><br>
+            <label>Section:<br>
+                <input type="text" id="edit_section">
+            </label><br><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../assets/js/Teacher Side/editProfile.js"></script>
+
+<style>
+    /* Filter Form Styling */
+.filters-form select {
+    background: #f8f8f8;
+    border: 1.5px solid #059981;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 1rem;
+    color: #2d3923;
+    margin-right: 12px;
+    margin-bottom: 8px;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px #05998111;
+}
+
+.filters-form select:focus {
+    border: 2px solid #037a65;
+    background: #fff;
+    box-shadow: 0 2px 12px #05998122;
+}
+
+.filters-form option {
+    background: #fff;
+    color: #2d3923;
+    font-size: 1rem;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 12px 0 0 0;
+}
+.pagination button {
+    background: var(--secondary);
+    color: #22223b;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+.pagination button.active,
+.pagination button:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* Responsive for mobile */
+@media (max-width: 600px) {
+    .filters-form select {
+        width: 100%;
+        margin-bottom: 12px;
+    }
+}
+</style>
+</div>
+<!-- Student Details Modal -->
+<div id="studentDetailsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div class="student-modal-card">
+        <button onclick="closeStudentDetailsModal()" class="close-btn">&times;</button>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+            <img class="profile-avatar" id="studentDetailsAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=student" alt="Student Avatar" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin-bottom:10px;">
+        </div>
+        <div class="profile-name" id="studentDetailsName" style="font-size:1.3em;font-family:'Baloo 2',cursive;color:#2e8b57;margin-bottom:2px;text-align:center;">Student Name</div>
+        <div class="profile-email" id="studentDetailsEmail" style="font-size:0.8em;font-family:'Baloo 2',cursive;color:#2e8b57;margin-bottom:2px;text-align:center;">-</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin:0 auto 18px auto;">
+            <div><i class="fa-solid fa-id-badge" style="color:violet;"></i><strong>ID:</strong> <span id="studentDetailsId">-</span></div>
+
+            <div><i class="fa-solid fa-user" style="color:#ffd700;"></i><strong>Age:</strong> <span id="studentDetailsAge">-</span></div>
+            <div><i class="fa-solid fa-venus-mars" style="color:#2e8b57;"></i><strong>Gender:</strong> <span id="studentDetailsGender">-</span></div>
+            <div><i class="fa-solid fa-graduation-cap" style="color:#2e8b57;"></i><strong>Grade:</strong> <span id="studentDetailsGrade">-</span></div>
+            <div><i class="fa-solid fa-apple-whole" style="color:#4faaff;"></i><strong>Section:</strong> <span id="studentDetailsSection">-</span></div>
+            <div><i class="fa-solid fa-calendar" style="color:#ff69b4;"></i><strong>S.Y:</strong> <span id="studentDetailsSY">-</span></div>
+        </div>
+        <div class="profile-info" style="width:100%;max-width:260px;margin:0 auto 0 auto;">
+            <div>
+                <i class="fa-solid fa-star" style="color:#ffd700;"></i>
+                <strong>Points:</strong>
+                <span id="studentPoints">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .student-modal-card {
+    background: linear-gradient(180deg, #ffe6f7 0%, #e0eaff 100%);
+    border-radius: 28px;
+    box-shadow: 0 4px 24px rgba(79,140,255,0.10);
+    max-width: 380px;
+    width: 100%;
+    padding: 36px 24px 24px 24px;
+    text-align:end;
+    position: relative;
+    font-family: 'Baloo 2', cursive, Arial, sans-serif;
+    animation: sidebarDrop 0.5s cubic-bezier(.77,0,.18,1);
+}
+
+.student-modal-card .close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    color: #ff69b4;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.student-modal-card .close-btn:hover {
+    color: #2e8b57;
+}
+
+.student-modal-card .profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.student-modal-card .profile-info > div {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px #18419b33;
+    padding: 7px 14px;
+    width: 100%;
+    gap: 8px;
+    font-size: 1.05rem;
+    color: #3f4d34;
+    margin: 0 auto;
+    /* Make content stay in one line */
+
+}
+
+.student-modal-card .profile-info strong {
+
+    color: #4faaff;
+    font-weight: 600;
+    font-size: 1.08rem;
+    flex-shrink: 0;
+}
+
+.student-modal-card .profile-info span {
+    margin-left: 8px;
+    font-weight: 600;
+    color: #3f4d34;
+    font-family: 'Baloo 2', cursive;
+    /* One line with ellipsis */
+    white-space: nowrap;
+    flex: 1 1 0;
+    min-width: 0;
+}
+</style>
+</body>
+</html>

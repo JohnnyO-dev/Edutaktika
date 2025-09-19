@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Teacher Approvals</title>
+    <style>
+        table { border-collapse: collapse; width: 90%; margin: 30px auto; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background: #4f8cff; color: #fff; }
+        .approved { color: green; font-weight: bold; }
+        .pending { color: orange; font-weight: bold; }
+        button { padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; }
+        .approve { background: #4f8cff; color: #fff; }
+        .reject { background: #ffb6b9; color: #232946; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">Teacher Account Approvals</h2>
+    <table id="teachersTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Grade Level</th><th>Section</th><th>Status</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be inserted here by JS -->
+        </tbody>
+    </table>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+    // Your Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+        authDomain: "edutaktika.firebaseapp.com",
+        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+        projectId: "edutaktika",
+        storageBucket: "edutaktika.appspot.com",
+        messagingSenderId: "676848575316",
+        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+        measurementId: "G-X3GT5TNN87"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Load teachers from Firebase
+    function loadTeachers() {
+        db.ref('teachers').once('value').then(snapshot => {
+            const tbody = document.querySelector('#teachersTable tbody');
+            tbody.innerHTML = '';
+            snapshot.forEach(child => {
+                const t = child.val();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.id || ''}</td>
+                    <td>${(t.fname || '') + ' ' + (t.lname || '')}</td>
+                    <td>${t.email || ''}</td>
+                    <td>${t.gradelevel || ''}</td>
+                    <td>${t.section || ''}</td>
+                    <td>
+                        ${t.approved ? '<span class="approved">Approved</span>' : '<span class="pending">Pending</span>'}
+                    </td>
+                    <td>
+                        ${!t.approved ? `
+                            <button class="approve" onclick="approveTeacher('${child.key}')">Approve</button>
+                            <button class="reject" onclick="rejectTeacher('${child.key}')">Reject</button>
+                        ` : '<span style="color:#aaa;">—</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    // Approve teacher
+    function approveTeacher(key) {
+        db.ref('teachers/' + key).update({ approved: true })
+            .then(loadTeachers);
+    }
+
+    // Reject (delete) teacher
+    function rejectTeacher(key) {
+        if (confirm('Reject and delete this teacher?')) {
+            db.ref('teachers/' + key).remove()
+                .then(loadTeachers);
+        }
+    }
+
+    // Initial load
+    loadTeachers();
+    </script>
+</body>
+</html>
