@@ -103,10 +103,16 @@ if (existsSync(editorDir)) {
   execSync('npm run build', { cwd: editorDir, stdio: 'inherit' });
   const dist = join(editorDir, 'dist');
   if (existsSync(dist)) {
-    const editorTarget = join(deployDir, 'editor');
-    mkdirSync(editorTarget, { recursive: true });
-    cpSync(dist, editorTarget, { recursive: true });
+    const editorTargetLower = join(deployDir, 'editor');
+    mkdirSync(editorTargetLower, { recursive: true });
+    cpSync(dist, editorTargetLower, { recursive: true });
     log('Copied editor build to deploy/editor/');
+
+    // Also duplicate under capitalized path for direct reference: /Editor/dist/index.html
+    const editorTargetCap = join(deployDir, 'Editor', 'dist');
+    mkdirSync(editorTargetCap, { recursive: true });
+    cpSync(dist, editorTargetCap, { recursive: true });
+    log('Copied editor build to deploy/Editor/dist/ (duplicate)');
   } else {
     log('WARNING: Editor/dist not found after build.');
   }
