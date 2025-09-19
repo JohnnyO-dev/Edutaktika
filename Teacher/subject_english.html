@@ -197,15 +197,23 @@
         </div>
 
 <script>
-// Create Lesson button: go to Editor.html (new lesson)
-document.getElementById('createLessonBtn').onclick = function() {
-    window.location.href = 'Editor.html';
-};
-
-// Quiz Section button: go to quiz section page (replace with your quiz page)
-document.getElementById('quizSectionBtn').onclick = function() {
-    window.location.href = 'quizSection.html';
-};
+// Unified Create Lesson navigation to built Editor dist
+(function(){
+    const btn = document.getElementById('createLessonBtn');
+    if(btn){
+        btn.addEventListener('click', function(){
+            const subject='subject_english';
+            const params=new URLSearchParams({subject});
+            const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+            const dev=`http://localhost:5173/?${params.toString()}`;
+            const prod=`/Editor/dist/index.html?${params.toString()}`;
+            window.location.href=isLocal?dev:prod;
+        });
+    }
+})();
+// Quiz Section button (unchanged placeholder)
+const quizSectionBtn=document.getElementById('quizSectionBtn');
+if(quizSectionBtn){quizSectionBtn.onclick=function(){window.location.href='quizSection.html';};}
 </script>
 
         <!-- Quarter Navigation -->
