@@ -428,7 +428,9 @@ label {
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-hourglass-half"></i></span>
                                     <label for="reg_age">Age</label>
-                                    <input type="number" name="reg_age" id="reg_age" min="1" max="110" required>
+                                    <!-- Added inputmode numeric and helper note; JS will sanitize to 1-110 only -->
+                                    <input type="number" name="reg_age" id="reg_age" min="1" max="110" required inputmode="numeric" aria-describedby="age-note">
+                                    <div id="age-note" style="font-size:0.8rem;color:#555;margin-top:2px;">Allowed: 1 - 110</div>
                                 </div>
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-venus-mars"></i></span>
@@ -564,14 +566,26 @@ function validateZip() {
 zipInput.addEventListener('input', validateZip);
 
 function validateAge() {
-    const val = ageInput.value ? parseInt(ageInput.value,10) : 0;
-    if (!val) return false;
-    if (val > 110) { ageInput.setCustomValidity('Age must not exceed 110.'); }
-    else if (val < 1) { ageInput.setCustomValidity('Age must be at least 1.'); }
-    else { ageInput.setCustomValidity(''); }
-    return ageInput.reportValidity();
+    if (ageInput.value === '') { ageInput.setCustomValidity(''); return false; }
+    const val = parseInt(ageInput.value,10);
+    if (isNaN(val)) { ageInput.setCustomValidity('Age must be a number.'); return false; }
+    if (val > 110) { ageInput.setCustomValidity('Age must not exceed 110.'); return false; }
+    if (val < 1) { ageInput.setCustomValidity('Age must be at least 1.'); return false; }
+    ageInput.setCustomValidity('');
+    return true;
 }
-ageInput.addEventListener('input', validateAge);
+
+// Sanitize & clamp input: remove non-digits, clamp to [1,110]
+ageInput.addEventListener('input', function() {
+    let raw = ageInput.value;
+    raw = raw.replace(/[^0-9]/g, ''); // strip non-digits
+    if (raw === '') { ageInput.value=''; ageInput.setCustomValidity(''); return; }
+    let num = parseInt(raw,10);
+    if (num > 110) num = 110; // clamp
+    if (num < 1) { ageInput.value=''; ageInput.setCustomValidity('Age must be at least 1.'); return; }
+    ageInput.value = num.toString();
+    validateAge();
+});
 
 // Registration handler for STUDENT (with email verification)
 document.getElementById('registerForm').onsubmit = async function(e) {
