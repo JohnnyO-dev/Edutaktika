@@ -19,11 +19,26 @@
 
     /* Fun Header with Animated Elements */
     header {
-        background-color: var(--white);
-        padding: 20px 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        position: relative;
+            background-color: var(--white);
+            padding: 16px 0; /* slightly reduced to create consistent fixed height */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky; /* allow natural flow but stick after scroll */
+            top: 0;
+            z-index: 1000; /* above content but below sidebar (which is 9999) */
+            /* fallback for browsers that mis-handle sticky with animations */
+            will-change: transform;
+        }
+
+    /* If any page wants a fully fixed header instead of sticky, add class .fixed-header to <header> */
+    header.fixed-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
     }
+
+    /* Utility: add to body (or main wrapper) to offset below fixed header to avoid overlap */
+    .with-header-offset { padding-top: 120px; }
 
     .header-content {
         max-width: 1200px;
