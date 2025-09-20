@@ -686,11 +686,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
 <script>
     // Place this script after your modal HTML
 
-// Show modal on Create Lesson click
-document.getElementById('createLessonBtn').onclick = function() {
-    const subject = 'subject_math';
-    window.location.href = `http://localhost:5173/?subject=${encodeURIComponent(subject)}`;
-};
+// Create Lesson click handled earlier by Netlify-aware script block (removed duplicate handler here)
 
 // Hide modal function
 function closeCreateLessonModal() {
@@ -808,7 +804,10 @@ firebase.auth().onAuthStateChanged(async function(user) {
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
     if (mode === 'edit') {
-        window.location.href = 'Editor.html?' + params;
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        const dev = `http://localhost:5173/?${params}`;
+        const prod = `/Editor/dist/index.html?${params}`;
+        window.location.href = isLocal ? dev : prod;
     } else {
         window.location.href = 'present.html?' + params;
     }
