@@ -103,16 +103,25 @@ if (existsSync(editorDir)) {
   execSync('npm run build', { cwd: editorDir, stdio: 'inherit' });
   const dist = join(editorDir, 'dist');
   if (existsSync(dist)) {
+    // Copy contents of dist into deploy/editor (flatten, not nest dist)
     const editorTargetLower = join(deployDir, 'editor');
     mkdirSync(editorTargetLower, { recursive: true });
-    cpSync(dist, editorTargetLower, { recursive: true });
-    log('Copied editor build to deploy/editor/');
+    readdirSync(dist).forEach(entry => {
+      const s = join(dist, entry);
+      const d = join(editorTargetLower, entry);
+      copyRecursive(s, d);
+    });
+    log('Copied editor build contents into deploy/editor/');
 
-    // Also duplicate under capitalized path for direct reference: /Editor/dist/index.html
-    const editorTargetCap = join(deployDir, 'Editor', 'dist');
-    mkdirSync(editorTargetCap, { recursive: true });
-    cpSync(dist, editorTargetCap, { recursive: true });
-    log('Copied editor build to deploy/Editor/dist/ (duplicate)');
+    // Duplicate full dist (including its structure) under /Editor/dist for case-sensitive references
+    const editorTargetCapDist = join(deployDir, 'Editor', 'dist');
+    mkdirSync(editorTargetCapDist, { recursive: true });
+    readdirSync(dist).forEach(entry => {
+      const s = join(dist, entry);
+      const d = join(editorTargetCapDist, entry);
+      copyRecursive(s, d);
+    });
+    log('Copied editor build contents into deploy/Editor/dist/');
   } else {
     log('WARNING: Editor/dist not found after build.');
   }

@@ -216,21 +216,10 @@
             </button>
         </div>
 
+    <script src="../assets/js/editorEnv.js"></script>
     <script>
-        // Create Lesson button: go to Editor.html (new lesson)
-        // Updated: navigate to built Editor dist with subject param
-        document.getElementById('createLessonBtn').onclick = function() {
-            const subject='subject_science';
-            const params=new URLSearchParams({subject});
-            const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
-            const dev=`http://localhost:5173/?${params.toString()}`;
-            const prod=`/Editor/dist/index.html?${params.toString()}`;
-            window.location.href=isLocal?dev:prod;
-        };
-
-        // Quiz Section button: go to quiz section page (replace with your quiz page)
-        document.getElementById('quizSectionBtn').onclick = function() {
-            window.location.href = 'quizSection.html';
+        document.getElementById('createLessonBtn').onclick = function(){
+            window.location.href = buildEditorUrl({ subject: 'subject_science' });
         };
     </script>
 
@@ -516,11 +505,11 @@ async function loadGlobalPresentations() {
 loadGlobalPresentations();
 
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
-    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
+    const paramsObj = { quarter, name, subject };
     if (mode === 'edit') {
-        window.location.href = 'Editor.html?' + params;
+        window.location.href = buildEditorUrl(paramsObj);
     } else {
-        window.location.href = 'present.html?' + params;
+        window.location.href = 'present.html?' + new URLSearchParams(paramsObj).toString();
     }
 }
 </script>

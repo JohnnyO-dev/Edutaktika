@@ -214,21 +214,11 @@
             </button>
         </div>
 
+    <script src="../assets/js/editorEnv.js"></script>
     <script>
-        // Create Lesson button: go to Editor.html (new lesson)
-        // Updated: navigate to built Editor dist with subject param
-        document.getElementById('createLessonBtn').onclick = function() {
-            const subject='subject_math';
-            const params=new URLSearchParams({subject});
-            const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
-            const dev=`http://localhost:5173/?${params.toString()}`;
-            const prod=`/Editor/dist/index.html?${params.toString()}`;
-            window.location.href=isLocal?dev:prod;
-        };
-
-        // Quiz Section button: go to quiz section page (replace with your quiz page)
-        document.getElementById('quizSectionBtn').onclick = function() {
-            window.location.href = 'quizSection.html';
+        // Launch editor for a brand new lesson (subject only)
+        document.getElementById('createLessonBtn').onclick = function(){
+            window.location.href = buildEditorUrl({ subject: 'subject_math' });
         };
     </script>
 
@@ -514,11 +504,17 @@ async function loadGlobalPresentations() {
 loadGlobalPresentations();
 
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
-    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
+    const paramsObj = { quarter, name, subject };
     if (mode === 'edit') {
-        window.location.href = 'Editor.html?' + params;
+        if (typeof buildEditorUrl === 'function') {
+            window.location.href = buildEditorUrl(paramsObj);
+        } else {
+            // Fallback if helper not loaded
+            const p = new URLSearchParams(paramsObj).toString();
+            window.location.href = '/Editor/dist/index.html?' + p;
+        }
     } else {
-        window.location.href = 'present.html?' + params;
+        window.location.href = 'present.html?' + new URLSearchParams(paramsObj).toString();
     }
 }
 </script>
@@ -703,9 +699,12 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
         });
     }
 
-    // Immediately redirect to Editor.html for the new lesson
-    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&subject=${encodeURIComponent(subjectPage)}`;
-    window.location.href = 'Editor.html?' + params;
+    // Immediately redirect to editor (dist) for the new lesson using shared helper
+    window.location.href = buildEditorUrl({
+        quarter: quarter,
+        name: title,
+        subject: subjectPage
+    });
 };
 
 </script>

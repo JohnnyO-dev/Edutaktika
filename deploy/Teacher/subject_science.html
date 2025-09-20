@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
     <link rel="icon" type="image/png" href="../images/icons/chemistry.png" />
+    <script src="../assets/js/editorEnv.js"></script>
     <title>Science</title>
     <style>
     .profile-sidebar {
@@ -179,10 +180,6 @@
     <script src="../assets/js/Teacher Side/header.js"></script>
 
     <div class="container">
-        <!--<div class="math-header>
-            <h1>Interactive Math Curriculum</h1>
-            <p>Master mathematics through engaging, game-based lessons</p>
-        </div>-->
 
         <!-- Add these buttons above your quarter navigation (inside .container) -->
         <div style="display:flex;gap:18px;margin-bottom:24px;">
@@ -194,25 +191,15 @@
             </button>
         </div>
 
-<script>
-// Unified Create Lesson navigation to built Editor dist
-(function(){
-    const btn = document.getElementById('createLessonBtn');
-    if(btn){
-        btn.addEventListener('click', function(){
-            const subject='subject_science';
-            const params=new URLSearchParams({subject});
-            const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
-            const dev=`http://localhost:5173/?${params.toString()}`;
-            const prod=`/Editor/dist/index.html?${params.toString()}`;
-            window.location.href=isLocal?dev:prod;
-        });
-    }
-})();
-// Quiz Section button (unchanged placeholder)
-const quizSectionBtn=document.getElementById('quizSectionBtn');
-if(quizSectionBtn){quizSectionBtn.onclick=function(){window.location.href='quizSection.html';};}
-</script>
+               <script>
+               (function(){
+                   const btn = document.getElementById('createLessonBtn');
+                   if(!btn) return;
+                   btn.addEventListener('click', ()=>{
+                       window.location.href = buildEditorUrl({ subject: 'subject_science' });
+                   });
+               })();
+               </script>
 
         <!-- Quarter Navigation -->
         <div class="quarter-nav">
@@ -237,16 +224,15 @@ if(quizSectionBtn){quizSectionBtn.onclick=function(){window.location.href='quizS
 
             <div class="lessons-container">
                 
-
-                
-            </div>
-
-            <!-- <div class="progress-container">
-                <div class="progress-title">Quarter Progress</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%"></div>
+                   // (Legacy viewPresentation removed; unified version below)
                 </div>
                 <div class="progress-stats">
+                       const paramsObj = { quarter, name, subject };
+                       if (mode === 'edit') {
+                           window.location.href = buildEditorUrl(paramsObj);
+                       } else {
+                           window.location.href = 'present.html?' + new URLSearchParams(paramsObj).toString();
+                       }
                     <span>65% Complete</span>
                     <span>2/3 Lessons Finished</span>
                 </div>

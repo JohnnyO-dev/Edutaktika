@@ -179,6 +179,7 @@
         <script src="../assets/js/Teacher Side/profile.js"></script>
 
     <script src="../assets/js/Teacher Side/header.js"></script>
+    <script src="../assets/js/editorEnv.js"></script>
 
     <div class="container">
         <!--<div class="math-header>
@@ -197,23 +198,14 @@
         </div>
 
 <script>
-// Unified Create Lesson navigation to built Editor dist
+// Create Lesson button using shared environment helper
 (function(){
     const btn = document.getElementById('createLessonBtn');
-    if(btn){
-        btn.addEventListener('click', function(){
-            const subject='subject_english';
-            const params=new URLSearchParams({subject});
-            const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
-            const dev=`http://localhost:5173/?${params.toString()}`;
-            const prod=`/Editor/dist/index.html?${params.toString()}`;
-            window.location.href=isLocal?dev:prod;
-        });
-    }
+    if(!btn) return;
+    btn.addEventListener('click', ()=>{
+        window.location.href = buildEditorUrl({ subject: 'subject_english' });
+    });
 })();
-// Quiz Section button (unchanged placeholder)
-const quizSectionBtn=document.getElementById('quizSectionBtn');
-if(quizSectionBtn){quizSectionBtn.onclick=function(){window.location.href='quizSection.html';};}
 </script>
 
         <!-- Quarter Navigation -->
@@ -524,14 +516,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 // function loadPresentationsByQuarter(quarter) { ... }
 // ['1','2','3','4','5'].forEach(loadPresentationsByQuarter);
 
-function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
-    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
-    if (mode === 'edit') {
-        window.location.href = 'Editor.html?' + params;
-    } else {
-        window.location.href = 'present.html?' + params;
-    }
-}
+// (Legacy viewPresentation removed; unified version at bottom.)
 </script>
 
 <style>
@@ -771,11 +756,11 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 });
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
-    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
+    const paramsObj = { quarter, name, subject };
     if (mode === 'edit') {
-        window.location.href = 'Editor.html?' + params;
+        window.location.href = buildEditorUrl(paramsObj);
     } else {
-        window.location.href = 'present.html?' + params;
+        window.location.href = 'present.html?' + new URLSearchParams(paramsObj).toString();
     }
 }
 </script>
