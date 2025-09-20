@@ -195,34 +195,46 @@
         </div>
 
 <script>
-// Environment-aware navigation for Create Lesson button.
-// Local dev (if running Vite): use localhost:5173; Production (Netlify): use deployed /editor/ path.
+// Netlify-aware Create Lesson navigation: prefers committed /Editor/dist build, falls back to lowercase /editor/ copy.
 (function(){
+    const SUBJECT_ID = 'subject_math';
+    const VITE_DEV = 'http://localhost:5173/';
+    const DIST_PRIMARY = '/Editor/dist/index.html'; // committed/dist copy
+    const DIST_FALLBACK = '/editor/';               // duplicated lowercase copy
+
+    function buildUrl(base){
+        const params = new URLSearchParams({ subject: SUBJECT_ID });
+        return base.includes('?') ? `${base}&${params}` : `${base}?${params}`;
+    }
+
+    async function resolveProdUrl(){
+        // Attempt a quick HEAD request to ensure primary exists (Netlify serves static 200 if present)
+        try {
+            const res = await fetch(DIST_PRIMARY, { method: 'HEAD', cache: 'no-store' });
+            if (res.ok) return buildUrl(DIST_PRIMARY);
+        } catch(e) { /* ignore and fallback */ }
+        return buildUrl(DIST_FALLBACK);
+    }
+
     const createBtn = document.getElementById('createLessonBtn');
-    if (createBtn) {
-        createBtn.addEventListener('click', function(){
-            const subject = 'subject_math';
-            const params = new URLSearchParams({ subject });
+    if(createBtn){
+        createBtn.addEventListener('click', async function(){
             const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-            const devUrl = `http://localhost:5173/?${params.toString()}`;
-            // Primary production path (duplicated dist copy):
-            const prodExplicit = `/Editor/dist/index.html?${params.toString()}`;
-            // Secondary production fallback (lowercase alias):
-            const prodAlias = `/editor/?${params.toString()}`;
             if (isLocal) {
-                window.location.href = devUrl;
+                window.location.href = buildUrl(VITE_DEV);
             } else {
-                // Try explicit path first; navigate there. If hosting setup rewrites fail, user can manually test /editor/ alias.
-                window.location.href = prodExplicit;
+                // Show quick feedback (optional inline spinner) while checking primary path
+                createBtn.disabled = true; createBtn.style.opacity='0.7';
+                const target = await resolveProdUrl();
+                window.location.href = target;
             }
         });
     }
 
-    // Gracefully handle absence of quizSectionBtn (if not yet implemented)
-    const quizBtn = document.getElementById('quizSectionBtn');
-        if (quizBtn) {
-            quizBtn.addEventListener('click', () => { window.location.href = 'quizSection.html'; });
-        }
+    const quizBtn = document.getElementById('createQuizBtn');
+    if(quizBtn){
+        quizBtn.addEventListener('click', function(){ window.location.href='quizSection.html'; });
+    }
 })();
 </script>
 
