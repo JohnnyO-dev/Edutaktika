@@ -230,7 +230,7 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
             </div>
 
             <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-channel-id="UCjPqk3KZAKIdGShdVLx9fqQ" style="margin-top: 20px;">
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
                 <div class="quarter-title" style="align-items:center; gap:10px;">
                     <i class="fab fa-youtube"></i>
                     <h3 style="margin:0;">Video Lessons</h3>
@@ -1083,20 +1083,20 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
 </script>
 
 <script>
-// Load latest YouTube videos via channel RSS feed into Quarter 1 (Teacher)
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher)
 async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
     const container = document.querySelector('#youtube-lessons .lessons-container');
     if (!container || !wrapper) return;
 
-    // Configure your channel ID here or set data-channel-id on #youtube-lessons
-    const channelId = (wrapper.dataset.channelId || '').trim();
-    if (!channelId) {
-        container.innerHTML = '<div style="color:#888;">Set a YouTube channel ID to load videos.</div>';
+    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
+    const playlistId = (wrapper.dataset.playlistId || '').trim();
+    if (!playlistId) {
+        container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
         return;
     }
 
-    const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`;
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
 
     // Helper to fetch with robust CORS fallbacks
     async function fetchWithCors(url) {
@@ -1135,7 +1135,17 @@ async function loadYouTubeVideosTeacher() {
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        entries.slice(0, 5).forEach(entry => {
+        
+        // Math-related keywords to filter content
+        const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning'];
+        
+        const filteredEntries = entries.filter(entry => {
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
+            return mathKeywords.some(keyword => title.includes(keyword));
+        });
+        
+        filteredEntries.slice(0, 5).forEach(entry => {
             const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
@@ -1160,7 +1170,7 @@ async function loadYouTubeVideosTeacher() {
         });
 
         if (!container.children.length) {
-            container.innerHTML = '<div>No recent videos found.</div>';
+            container.innerHTML = '<div>No math-related videos found in the playlist.</div>';
         }
     } catch (err) {
         console.error('Error fetching YouTube RSS (teacher)', err);

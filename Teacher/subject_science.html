@@ -226,6 +226,17 @@
                 
                    // (Legacy viewPresentation removed; unified version below)
                 </div>
+
+            <!-- YouTube Lessons (auto-fetched) -->
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FvX8con4ltjXkQQTOySuXMD" style="margin-top: 20px;">
+                <div class="quarter-title" style="align-items:center; gap:10px;">
+                    <i class="fab fa-youtube"></i>
+                    <h3 style="margin:0;">Video Lessons</h3>
+                </div>
+                <div class="lessons-container">
+                    <div>Loading YouTube lessons…</div>
+                </div>
+            </div>
                 <div class="progress-stats">
                        const paramsObj = { quarter, name, subject };
                        if (mode === 'edit') {
@@ -1075,6 +1086,105 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
     const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&subject=${encodeURIComponent(subjectPage)}`;
     window.location.href = 'quizEditor.html?' + params;
 };
+</script>
+
+<script>
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - Science
+async function loadYouTubeVideosTeacher() {
+    const wrapper = document.getElementById('youtube-lessons');
+    const container = document.querySelector('#youtube-lessons .lessons-container');
+    if (!container || !wrapper) return;
+
+    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
+    const playlistId = (wrapper.dataset.playlistId || '').trim();
+    if (!playlistId) {
+        container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
+        return;
+    }
+
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
+
+    // Helper to fetch with robust CORS fallbacks
+    async function fetchWithCors(url) {
+        // 1) Try direct
+        try {
+            const r = await fetch(url);
+            if (r.ok) return await r.text();
+            throw new Error('HTTP ' + r.status);
+        } catch (e1) {
+            // 2) Try AllOrigins raw endpoint
+            try {
+                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+                if (rAO.ok) return await rAO.text();
+                throw new Error('AllOrigins HTTP ' + rAO.status);
+            } catch (e2) {
+                // 3) Try r.jina.ai mirror (read-only proxy with permissive CORS)
+                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
+                const rJ = await fetch(jinaUrl);
+                if (rJ.ok) return await rJ.text();
+                throw new Error('jina.ai HTTP ' + rJ.status);
+            }
+        }
+    }
+
+    try {
+        const xmlText = await fetchWithCors(feedUrl);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xmlText, 'text/xml');
+        const entries = Array.from(doc.getElementsByTagName('entry'));
+
+        if (!entries.length) {
+            container.innerHTML = '<div>No recent videos found.</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
+        
+        // Science-related keywords to filter content
+        const scienceKeywords = ['science', 'scientific', 'experiment', 'laboratory', 'lab', 'chemistry', 'physics', 'biology', 'earth', 'space', 'astronomy', 'geology', 'meteorology', 'ecology', 'environment', 'nature', 'plant', 'animal', 'human', 'body', 'cell', 'molecule', 'atom', 'element', 'compound', 'reaction', 'energy', 'force', 'motion', 'gravity', 'magnetism', 'electricity', 'light', 'sound', 'heat', 'temperature', 'pressure', 'volume', 'mass', 'density', 'matter', 'solid', 'liquid', 'gas', 'plasma', 'state', 'change', 'evaporation', 'condensation', 'melting', 'freezing', 'sublimation', 'deposition', 'mixture', 'solution', 'suspension', 'colloid', 'pure', 'substance', 'acid', 'base', 'ph', 'neutral', 'indicator', 'litmus', 'phenolphthalein', 'bromothymol', 'blue', 'red', 'cabbage', 'universal', 'indicator', 'paper', 'strip', 'digital', 'meter', 'probe', 'sensor', 'thermometer', 'barometer', 'hygrometer', 'anemometer', 'rain', 'gauge', 'wind', 'vane', 'compass', 'magnifying', 'glass', 'microscope', 'telescope', 'binoculars', 'camera', 'video', 'recorder', 'stopwatch', 'timer', 'scale', 'balance', 'ruler', 'meter', 'stick', 'tape', 'measure', 'measuring', 'cup', 'beaker', 'flask', 'test', 'tube', 'petri', 'dish', 'slide', 'cover', 'slip', 'dropper', 'pipette', 'funnel', 'filter', 'paper', 'strainer', 'sieve', 'colander', 'spoon', 'spatula', 'tongs', 'forceps', 'scissors', 'knife', 'blade', 'cutter', 'hammer', 'nail', 'screw', 'screwdriver', 'wrench', 'pliers', 'clamp', 'stand', 'ring', 'gauze', 'mat', 'pad', 'tripod', 'bunsen', 'burner', 'alcohol', 'lamp', 'candle', 'match', 'lighter', 'fire', 'flame', 'heat', 'source', 'hot', 'plate', 'stove', 'oven', 'microwave', 'refrigerator', 'freezer', 'ice', 'water', 'bath', 'cooling', 'heating', 'insulation', 'conduction', 'convection', 'radiation', 'thermal', 'energy', 'transfer', 'flow', 'current', 'circuit', 'battery', 'wire', 'bulb', 'switch', 'resistor', 'capacitor', 'transformer', 'generator', 'motor', 'electromagnet', 'magnetic', 'field', 'pole', 'north', 'south', 'attract', 'repel', 'force', 'push', 'pull', 'friction', 'inertia', 'momentum', 'acceleration', 'velocity', 'speed', 'distance', 'time', 'position', 'direction', 'vector', 'scalar', 'magnitude', 'unit', 'measurement', 'precision', 'accuracy', 'error', 'uncertainty', 'significant', 'figures', 'decimal', 'places', 'rounding', 'estimation', 'approximation', 'calculation', 'computation', 'formula', 'equation', 'variable', 'constant', 'coefficient', 'exponent', 'power', 'root', 'square', 'cube', 'logarithm', 'exponential', 'linear', 'quadratic', 'cubic', 'polynomial', 'function', 'graph', 'plot', 'chart', 'table', 'data', 'statistics', 'mean', 'median', 'mode', 'range', 'variance', 'deviation', 'standard', 'distribution', 'frequency', 'histogram', 'bar', 'line', 'pie', 'scatter', 'correlation', 'regression', 'trend', 'pattern', 'relationship', 'proportion', 'ratio', 'percentage', 'fraction', 'decimal', 'percent', 'probability', 'chance', 'likelihood', 'odds', 'risk', 'safety', 'hazard', 'danger', 'caution', 'warning', 'precaution', 'protection', 'equipment', 'gear', 'clothing', 'gloves', 'goggles', 'mask', 'apron', 'coat', 'uniform', 'helmet', 'boots', 'shoes', 'socks', 'pants', 'shirt', 'blouse', 'dress', 'skirt', 'shorts', 'underwear', 'bra', 'panties', 'briefs', 'boxers', 'undershirt', 'tank', 'top', 'crop', 'hoodie', 'sweater', 'jacket', 'vest', 'cardigan', 'blazer', 'suit', 'tie', 'bow', 'scarf', 'hat', 'cap', 'beanie', 'headband', 'bandana', 'hair', 'tie', 'clip', 'pin', 'barrette', 'comb', 'brush', 'shampoo', 'conditioner', 'soap', 'body', 'wash', 'gel', 'cream', 'lotion', 'moisturizer', 'sunscreen', 'tanning', 'oil', 'spray', 'powder', 'deodorant', 'antiperspirant', 'perfume', 'cologne', 'fragrance', 'scent', 'aroma', 'odor', 'smell', 'taste', 'flavor', 'texture', 'feel', 'touch', 'smooth', 'rough', 'soft', 'hard', 'smooth', 'bumpy', 'lumpy', 'grainy', 'sandy', 'rocky', 'stony', 'pebbly', 'gravelly', 'dusty', 'dirty', 'clean', 'pure', 'clear', 'transparent', 'opaque', 'translucent', 'shiny', 'dull', 'matte', 'glossy', 'reflective', 'absorbent', 'waterproof', 'breathable', 'stretchy', 'elastic', 'rigid', 'flexible', 'bendable', 'malleable', 'ductile', 'brittle', 'fragile', 'durable', 'strong', 'weak', 'heavy', 'light', 'dense', 'sparse', 'thick', 'thin', 'wide', 'narrow', 'broad', 'deep', 'shallow', 'long', 'short', 'tall', 'high', 'low', 'big', 'small', 'large', 'tiny', 'huge', 'enormous', 'gigantic', 'massive', 'miniature', 'microscopic', 'macroscopic', 'visible', 'invisible', 'hidden', 'obvious', 'clear', 'unclear', 'vague', 'precise', 'exact', 'approximate', 'rough', 'smooth', 'even', 'uneven', 'level', 'slanted', 'tilted', 'straight', 'curved', 'bent', 'twisted', 'spiral', 'circular', 'round', 'square', 'rectangular', 'triangular', 'oval', 'elliptical', 'diamond', 'heart', 'star', 'cross', 'plus', 'minus', 'times', 'divided', 'equals', 'plus', 'minus', 'times', 'divided', 'equals', 'plus', 'minus', 'times', 'divided', 'equals'];
+        
+        const filteredEntries = entries.filter(entry => {
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
+            return scienceKeywords.some(keyword => title.includes(keyword));
+        });
+        
+        filteredEntries.slice(0, 5).forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+                || entry.getElementsByTagName('yt:videoId')?.[0]
+                || entry.querySelector('yt\\:videoId, videoId');
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            if (!videoId) return;
+
+            const card = document.createElement('div');
+            card.className = 'lesson-item';
+            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+            card.innerHTML = `
+                <div class="video-embed" style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;margin-bottom:12px;background:#000;">
+                    <iframe src="https://www.youtube.com/embed/${videoId}" title="${title.replace(/"/g, '&quot;')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" loading="lazy"></iframe>
+                </div>
+                <div class="lesson-title">
+                    <h3>${title}</h3>
+                    <button class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='${watchUrl}'">Watch</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        if (!container.children.length) {
+            container.innerHTML = '<div>No Science-related videos found in the playlist.</div>';
+        }
+    } catch (err) {
+        console.error('Error fetching YouTube RSS (teacher)', err);
+        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 </script>
     </div>
 </body>
