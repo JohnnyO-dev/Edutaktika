@@ -24,7 +24,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Leaderboard</title>
+    <title>Math Leaderboard</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/header.css">
@@ -174,11 +174,12 @@
 
             
 
-        <script src="../assets/js/Teacher Side/header.js"></script>
+        <script src="../assets/js/Student Side/header.js"></script>
 
         <div class="leaderboard-container">
-            <div class="leaderboard-title">🌟 Math Leaderboard - Grade 5 🌟</div>
+            <div class="leaderboard-title" id="leaderboardTitle">🌟 Math Leaderboard 🌟</div>
             <div class="leaderboard-desc">See who's on top this week! Play games, earn points, and climb the ranks!</div>
+            
             <!-- Podium -->
             <div class="podium" id="podium"></div>
             <!-- Leaderboard Table -->
@@ -224,8 +225,30 @@
             const auth = firebase.auth();
        
 
-        // 2. Fetch and display leaderboard (Grade 5 only)
+        // 2. Fetch and display leaderboard (based on current user's grade)
         async function loadLeaderboard() {
+            // Get current user's grade level
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) return;
+            
+            const userSnapshot = await db.ref('students/' + currentUser.uid).once('value');
+            const userData = userSnapshot.val();
+            const userGrade = userData ? userData.gradelevel : null;
+            
+            if (!userGrade) {
+                console.error('Could not determine user grade level');
+                return;
+            }
+            
+            // Update title to show current user's grade
+            const titleEl = document.getElementById('leaderboardTitle');
+            if (titleEl) {
+                titleEl.textContent = `🌟 Math Leaderboard - Grade ${userGrade} 🌟`;
+            }
+            
+            // Update page title
+            document.title = `Math Leaderboard - Grade ${userGrade}`;
+            
             // Base student snapshot (ordered by quiz points for initial retrieval)
             const snapshot = await db.ref('students').orderByChild('points').once('value');
             let students = [];
@@ -273,8 +296,8 @@
                 s.combinedPoints = s.quizPoints + s.assessmentPoints;
             });
 
-            // Filter for Grade 5 students only
-            students = students.filter(s => s.gradelevel == 5);
+            // Filter for current user's grade level only
+            students = students.filter(s => s.gradelevel == userGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => {
@@ -512,8 +535,8 @@
     <script src="../assets/js/Student Side/profile.js"></script>
 
     <div class="leaderboard-container" style="margin-top:40px;">
-            <div class="leaderboard-title">📘 Assessment Leaderboard - Grade 5</div>
-            <div class="leaderboard-desc">Top Grade 5 students by best assessment scores.</div>
+            <div class="leaderboard-title" id="assessmentTitle">📘 Assessment Leaderboard</div>
+            <div class="leaderboard-desc" id="assessmentDesc">Top students by best assessment scores.</div>
             <table class="leaderboard-table" id="assessmentLeaderboardTable" style="margin-top:18px;">
                 <thead>
                     <tr>
@@ -574,10 +597,34 @@
     }
     </script>
     <script>
-    // Assessment leaderboard for Grade 5 only
+    // Assessment leaderboard based on current user's grade
     async function loadAssessmentLeaderboard() {
       const tbody = document.getElementById('assessment-leaderboard-body');
       if(!tbody) return;
+      
+      // Get current user's grade level
+      const currentUser = firebase.auth().currentUser;
+      if (!currentUser) return;
+      
+      const userSnapshot = await firebase.database().ref('students/' + currentUser.uid).once('value');
+      const userData = userSnapshot.val();
+      const userGrade = userData ? userData.gradelevel : null;
+      
+      if (!userGrade) {
+        console.error('Could not determine user grade level for assessment leaderboard');
+        return;
+      }
+      
+      // Update assessment title and description
+      const assessmentTitleEl = document.getElementById('assessmentTitle');
+      const assessmentDescEl = document.getElementById('assessmentDesc');
+      if (assessmentTitleEl) {
+        assessmentTitleEl.textContent = `📘 Assessment Leaderboard - Grade ${userGrade}`;
+      }
+      if (assessmentDescEl) {
+        assessmentDescEl.textContent = `Top Grade ${userGrade} students by best assessment scores.`;
+      }
+      
       try {
         const [{aggregates}, studentsSnap] = await Promise.all([
           fetchAssessmentAggregates(),
@@ -591,8 +638,9 @@
           return { uid, name, a1, totalBest: aggregates[uid].totalBest, gradelevel: info.gradelevel };
         });
         
-        // Filter for Grade 5 students only
-        rows = rows.filter(r => r.gradelevel == 5);
+        // Filter for current user's grade level only
+        rows = rows.filter(r => r.gradelevel == userGrade);
+        
         rows.sort((a,b)=> {
             // Primary sort: Total best score (descending)
             if (b.totalBest !== a.totalBest) return b.totalBest - a.totalBest;
@@ -602,7 +650,7 @@
             return a.name.localeCompare(b.name);
         });
         if(rows.length === 0){
-          tbody.innerHTML = '<tr><td colspan="4" style="padding:18px;text-align:center;">No Grade 5 assessment data.</td></tr>'; return;
+          tbody.innerHTML = `<tr><td colspan="4" style="padding:18px;text-align:center;">No Grade ${userGrade} assessment data.</td></tr>`; return;
         }
         tbody.innerHTML = rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.a1}</td><td>${r.totalBest}</td></tr>`).join('');
       } catch(e){
