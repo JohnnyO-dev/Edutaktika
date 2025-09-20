@@ -37,6 +37,12 @@
 </head>
 <body>
 <div id="mainContent" style="display:none;">
+    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 
     <header>
         <div class="floating-elements">
@@ -82,6 +88,11 @@
             </nav>
         </div>
     </header>
+
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
  <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
