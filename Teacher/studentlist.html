@@ -50,9 +50,6 @@
 }
 </style>
    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 <div id="mainContent" style="display:none;">
@@ -362,7 +359,6 @@
         const sectionOptions = Array.from(sections).sort().map(s => `<option value="${s}">${s}</option>`).join('');
         document.getElementById('list_school_year').innerHTML = `<option value="">All School Years</option>${yearOptions}`;
         document.getElementById('scoring_school_year').innerHTML = `<option value="">All School Years</option>${yearOptions}`;
-        document.getElementById('list_section').innerHTML = `<option value="">All Sections</option>${sectionOptions}`;
         document.getElementById('scoring_section').innerHTML = `<option value="">All Sections</option>${sectionOptions}`;
     }
 
@@ -371,7 +367,6 @@ const rowsPerPage = 10;
 
     async function loadStudents(page = 1) {
         const sy = document.getElementById('list_school_year').value;
-        const sec = document.getElementById('list_section').value;
         let ref = db.ref('students');
         const snapshot = await ref.once('value');
         let studentsArr = [];
@@ -415,7 +410,7 @@ const rowsPerPage = 10;
 
         snapshot.forEach(child => {
             const s = child.val();
-            if ((sy && s.school_year !== sy) || (sec && s.section !== sec)) return;
+            if (sy && s.school_year !== sy) return;
             if (teacherSection && s.section !== teacherSection) return;
             if (teacherSY && s.school_year !== teacherSY) return;
             if (teacherGrade && s.gradelevel !== teacherGrade) return;
@@ -555,7 +550,6 @@ const rowsPerPage = 10;
         await loadScoring();
 
         document.getElementById('list_school_year').addEventListener('change', loadStudents);
-        document.getElementById('list_section').addEventListener('change', loadStudents);
         document.getElementById('scoring_school_year').addEventListener('change', loadScoring);
         document.getElementById('scoring_section').addEventListener('change', loadScoring);
     });
