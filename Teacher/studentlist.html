@@ -37,6 +37,7 @@
    <link rel="stylesheet" href="../CSS/studentlist.css">
    <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <style>
     .profile-sidebar {
     margin-top: 20px;
@@ -53,6 +54,13 @@
 </head>
 <body>
 <div id="mainContent" style="display:none;">
+
+        <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -931,5 +939,8 @@ async function showStudentDetails(studentId) {
     min-width: 0;
 }
 </style>
+
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/tabDropdown.js"></script>
 </body>
 </html>

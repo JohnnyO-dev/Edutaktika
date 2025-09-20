@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <title>Science</title>
     <style>
         nav ul {
@@ -98,6 +99,13 @@
 </head>
 <body>
     <div id="mainContent" style="display:none;">
+
+                    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -141,6 +149,11 @@
             </nav>
         </div>
     </header>
+
+    <!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
      <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
@@ -236,6 +249,18 @@
     <script src="../assets/js/Student Side/header.js"></script>
 
     <div class="container">
+        <!-- Dropdown for mobile -->
+<div class="quarter-dropdown-custom">
+    <button class="quarter-dropdown-btn" id="quarterDropdownBtn">Quarter 1</button>
+    <ul class="quarter-dropdown-list" id="quarterDropdownList">
+        <li data-target="quarter-1" class="active">Quarter 1</li>
+        <li data-target="quarter-2">Quarter 2</li>
+        <li data-target="quarter-3">Quarter 3</li>
+        <li data-target="quarter-4">Quarter 4</li>
+        <li data-target="quarter-5">Quizzes</li>
+        <li data-target="quarter-assessments">Assessments</li>
+    </ul>
+</div>
         <div class="quarter-nav">
             <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
             <div class="quarter-tab" data-quarter="2">Quarter 2</div>
@@ -911,7 +936,11 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
         });
     });
 })();
+
 </script>
+<script src="../assets/js/navbar.js"></script>
+
+<script src="../assets/js/tabDropdown.js"></script>
 </div>
 </body>
 </html>
