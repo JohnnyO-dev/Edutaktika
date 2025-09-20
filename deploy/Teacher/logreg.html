@@ -419,7 +419,10 @@ label {
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-hourglass-half"></i></span>
                                     <label for="reg_age">Age</label>
-                                    <input type="number" name="reg_age" id="reg_age" min="1" max="110" required>
+                                    <!-- Added inputmode numeric; JS will sanitize to 1-99 only -->
+                                    <input type="number" name="reg_age" id="reg_age" min="1" max="99" required inputmode="numeric" aria-describedby="age-note age-status">
+                                    <div id="age-note" style="font-size:0.8rem;color:#555;margin-top:2px;">Allowed: 1 - 99</div>
+                                    <div id="age-status" style="font-size:0.8rem;margin-top:2px;min-height:16px;"></div>
                                 </div>
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-venus-mars"></i></span>
@@ -559,14 +562,32 @@ function validateZip() {
 zipInput.addEventListener('input', validateZip);
 
 function validateAge() {
-    const val = ageInput.value ? parseInt(ageInput.value,10) : 0;
-    if (!val) return false;
-    if (val > 110) { ageInput.setCustomValidity('Age must not exceed 110.'); }
-    else if (val < 1) { ageInput.setCustomValidity('Age must be at least 1.'); }
-    else { ageInput.setCustomValidity(''); }
-    return ageInput.reportValidity();
+    if (ageInput.value === '') { ageInput.setCustomValidity(''); return false; }
+    const val = parseInt(ageInput.value,10);
+    if (isNaN(val)) { ageInput.setCustomValidity('Age must be a number.'); return false; }
+    if (val > 99) { ageInput.setCustomValidity('Age must not exceed 99.'); return false; }
+    if (val < 1) { ageInput.setCustomValidity('Age must be at least 1.'); return false; }
+    ageInput.setCustomValidity('');
+    return true;
 }
-ageInput.addEventListener('input', validateAge);
+
+const ageStatus = document.getElementById('age-status');
+function setAgeStatus(text, color) { ageStatus.textContent = text; ageStatus.style.color = color; }
+
+// Debounce utility
+function debounce(fn, delay=120) { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); }; }
+
+// Sanitize & clamp input: remove non-digits, clamp to [1,110]
+ageInput.addEventListener('input', debounce(function() {
+    let raw = ageInput.value.replace(/[^0-9]/g, '');
+    if (raw === '') { ageInput.value=''; ageInput.setCustomValidity(''); setAgeStatus('', ''); return; }
+    let num = parseInt(raw,10);
+    if (isNaN(num)) { ageInput.value=''; setAgeStatus('Age must be numeric.', '#c0392b'); return; }
+    if (num > 99) { num = 99; setAgeStatus('Clamped to 99 (max).', '#c0392b'); }
+    else if (num < 1) { ageInput.value=''; ageInput.setCustomValidity('Age must be at least 1.'); setAgeStatus('Age must be at least 1.', '#c0392b'); return; }
+    ageInput.value = num.toString();
+    if (validateAge()) setAgeStatus('✔️ Age OK', 'green');
+}, 90));
 
 // Registration handler
 document.getElementById('registerForm').onsubmit = async function(e) {

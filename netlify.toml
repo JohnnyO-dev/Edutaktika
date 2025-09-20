@@ -8,7 +8,7 @@
   to = "/editor/index.html"
   status = 200
 
-# Generic fallback for other routes that should land on root index (optional)
+# Teacher/Student sections (routes land on their own HTML entrypoints)
 [[redirects]]
   from = "/teacher/*"
   to = "/Teacher/homepage.html"
@@ -19,13 +19,13 @@
   to = "/Student/homepage.html"
   status = 200
 
-# Catch-all: if you prefer SPA fallback to root uncomment below
+# Optional: catch-all SPA fallback for root app
 # [[redirects]]
 #   from = "/*"
 #   to = "/index.html"
 #   status = 200
 
-# Security & caching headers (basic baseline)
+# Security & caching headers (baseline)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -39,6 +39,6 @@
   [headers.values]
     Cache-Control = "no-cache"
 
-# You can add environment variables here later if moving Firebase config:
+# Env vars (if needed later for Firebase / APIs)
 # [build.environment]
 #   VITE_FIREBASE_API_KEY = "..."

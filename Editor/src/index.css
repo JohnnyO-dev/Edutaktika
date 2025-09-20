@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
 /* Force sidebar and topbar to use light color scheme */
 .polotno-side-tabs-container,
 .polotno-panel-container,
@@ -39,7 +41,6 @@
     
     color: #000000 !important;
 }
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 
 
 body {
