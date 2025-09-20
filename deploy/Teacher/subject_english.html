@@ -698,9 +698,13 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
             document.getElementById('lesson_desc').value = '';
             closeCreateLessonModal();
 
-            // Redirect to Editor.html with parameters and subject info
-            const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&subject=${encodeURIComponent(subjectPage)}`;
-            window.location.href = `Editor.html?${params}`;
+            // Redirect to environment-aware editor build
+            window.location.href = buildEditorUrl({
+                quarter: quarter,
+                name: title,
+                desc: desc,
+                subject: subjectPage
+            });
         }
     });
 };

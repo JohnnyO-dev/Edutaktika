@@ -194,59 +194,12 @@
             </button>
         </div>
 
+<script src="../assets/js/editorEnv.js"></script>
 <script>
-// Netlify-aware Create Lesson navigation: prefers committed /Editor/dist build, falls back to lowercase /editor/ copy.
-(function(){
-    const SUBJECT_ID = 'subject_math';
-    const VITE_DEV = 'http://localhost:5173/';
-    const DIST_PRIMARY = '/Editor/dist/index.html'; // committed/dist copy
-    const DIST_FALLBACK = '/editor/';               // duplicated lowercase copy
-
-    function buildUrl(base){
-        const params = new URLSearchParams({ subject: SUBJECT_ID });
-        return base.includes('?') ? `${base}&${params}` : `${base}?${params}`;
-    }
-
-    async function resolveProdUrl(){
-        // Attempt a quick HEAD request to ensure primary exists (Netlify serves static 200 if present)
-        try {
-            const res = await fetch(DIST_PRIMARY, { method: 'HEAD', cache: 'no-store' });
-            if (res.ok) return buildUrl(DIST_PRIMARY);
-        } catch(e) { /* ignore and fallback */ }
-        return buildUrl(DIST_FALLBACK);
-    }
-
-    const createBtn = document.getElementById('createLessonBtn');
-    if(createBtn){
-        createBtn.addEventListener('click', async function(){
-            const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-            if (isLocal) {
-                window.location.href = buildUrl(VITE_DEV);
-            } else {
-                // Show quick feedback (optional inline spinner) while checking primary path
-                createBtn.disabled = true; createBtn.style.opacity='0.7';
-                const target = await resolveProdUrl();
-                window.location.href = target;
-            }
-        });
-    }
-
-    const quizBtn = document.getElementById('createQuizBtn');
-    if(quizBtn){
-        quizBtn.addEventListener('click', function(){ window.location.href='quizSection.html'; });
-    }
-})();
-</script>
-<script>
-// Shared helper for determining the correct Editor base (used for edit + create flows)
-function getEditorBase() {
-    const hostname = location.hostname;
-    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-    const base = isLocal ? 'http://localhost:5173/' : '/Editor/dist/index.html';
-    // Diagnostic to help understand unexpected localhost redirects in production
-    console.debug('[editor-nav]', { hostname, isLocal, chosen: base });
-    return base;
-}
+// Use shared buildEditorUrl for create lesson navigation
+document.getElementById('createLessonBtn')?.addEventListener('click', () => {
+  window.location.href = buildEditorUrl({ subject: 'subject_math' });
+});
 </script>
 
         <!-- Quarter Navigation -->
@@ -750,9 +703,12 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
 
             // Environment-aware redirect to Editor build (dev vs production)
             const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&subject=${encodeURIComponent(subjectPage)}`;
-            const base = getEditorBase();
-            const sep = base.includes('?') ? '&' : '?';
-            window.location.href = `${base}${sep}${params}`;
+            window.location.href = buildEditorUrl({
+                quarter,
+                name: title,
+                desc,
+                subject: subjectPage
+            });
         }
     });
 };
@@ -810,9 +766,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
     if (mode === 'edit') {
-        const base = getEditorBase();
-        const sep = base.includes('?') ? '&' : '?';
-        window.location.href = `${base}${sep}${params}`;
+    window.location.href = buildEditorUrl({ quarter, name, subject });
     } else {
         window.location.href = 'present.html?' + params;
     }
