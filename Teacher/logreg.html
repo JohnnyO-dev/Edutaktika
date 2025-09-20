@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
     :root {
         --primary: #2e8b57;
@@ -24,6 +26,16 @@
         font-family: 'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
         box-sizing: border-box;
     }
+    /* Global font consistency (teacher) */
+    /* Avoid applying font-family to ::before/::after so FontAwesome glyphs keep their own font */
+    body, button, input, select, textarea, label, p, h1, h2, h3, h4, h5, h6, .tab-btn, .action-btn, .container, .auth-hero-content {
+        font-family: 'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
+    }
+    /* FontAwesome base classes */
+    .fa, .fas, .far, .fal, .fab { font-family: 'Font Awesome 6 Free'; }
+    .fas, .fa-solid { font-weight: 900; }
+    /* Ensure the pseudo-elements for icons keep FontAwesome font (overrides any inheritance) */
+    .fa::before, .fas::before, .far::before, .fal::before, .fab::before { font-family: 'Font Awesome 6 Free'; font-weight: 900; }
     body {
         min-height: 100vh;
         display: flex;
@@ -880,6 +892,20 @@ lrnInput.addEventListener('input', function() {
 </script>
 
  <script src="../assets/js/Teacher Side/logreg.js"></script>
+<script>
+// Password visibility toggle helper (added)
+function togglePassword(id, trigger){
+    const input = document.getElementById(id);
+    if(!input) return;
+    const icon = trigger.querySelector('i');
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    if(icon){
+        icon.classList.toggle('fa-eye', showing);
+        icon.classList.toggle('fa-eye-slash', !showing);
+    }
+}
+</script>
 
 </body>
 </html>

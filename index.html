@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         :root {
             --primary: #3f4d34;
@@ -13,6 +15,13 @@
             --accent: #f5bda8;
             --mint: #fff;
         }
+        /* Global font consistency */
+        *, *::before, *::after {
+            font-family: 'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
+        }
+        /* Preserve FontAwesome weight */
+        .fa, .fas, .far, .fal, .fab { font-family: 'Font Awesome 6 Free'; }
+        .fas, .fa-solid { font-weight: 900; }
         html, body {
             height: 100vh;
             margin: 0;
