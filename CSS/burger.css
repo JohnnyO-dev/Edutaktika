@@ -12,32 +12,35 @@
     position: fixed;
     top: 18px;
     right: 18px;
+    left: 5;
 }
 .burger-btn span {
     display: block;
     width: 26px;
     height: 4px;
     margin: 4px 0;
-    background: #2e8b57;
+    background: #8b602e;
     border-radius: 2px;
     transition: 0.3s;
+    
 }
 @media (max-width: 900px) {
     .burger-btn {
         display: flex !important;
+    
     }
     nav {
         position: fixed !important;
         top: 0;
-        right: -100vw;
+        right: 100vw;
         width: 55vw;
         max-width: 360px;
         min-width: 0 !important;
         height: 100vh;
         background: linear-gradient(135deg, #e6ffe6 0%, #f9f9ff 100%);
         /* Use the same gradient or color as your profile sidebar */
-        border-top-left-radius: 32px;
-        border-bottom-left-radius: 32px;
+        border-top-right-radius: 32px;
+        border-bottom-right-radius: 32px;
         box-shadow: -2px 0 24px rgba(46,139,87,0.13), 0 0 0 1px #e0e0e0;
         z-index: 3000 !important;
         flex-direction: column;
@@ -47,9 +50,10 @@
         transition: right 0.35s cubic-bezier(.77,0,.18,1);
         overflow-y: auto;
         overflow-x: hidden;
+        
     }
     nav.open {
-        right: 0;
+        left: 0;
     }
     nav ul {
         flex-direction: column !important;

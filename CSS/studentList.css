@@ -322,7 +322,7 @@
         z-index: 3000 !important;
         position: fixed !important;
         top: 0;
-        right: -100vw;
+        right: 100vw;
         width: 85vw;
         max-width: 360px;
         min-width: 0 !important;
@@ -338,7 +338,7 @@
         overflow-x: hidden;
     }
     nav.open {
-        right: 0;
+        left: 0;
     }
     .sidebar-overlay {
         z-index: 2999 !important;
