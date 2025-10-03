@@ -20,6 +20,7 @@ import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
 import { PhotosSection } from './sections/photos-section';
 import { BackgroundsSection } from './sections/backgrounds-section';
+import { ScienceTemplatesSection } from './sections/science-templates/science-templates-section';
 
 import { useProject } from './project';
 
@@ -67,6 +68,8 @@ DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
 DEFAULT_SECTIONS.splice(3, 0, IconsSection);
 // add photos and backgrounds sections
 DEFAULT_SECTIONS.splice(4, 0, PhotosSection, BackgroundsSection);
+// add science templates section
+DEFAULT_SECTIONS.splice(5, 0, ScienceTemplatesSection);
 // add two more sections
 DEFAULT_SECTIONS.push(QuotesSection, QrSection);
 // DEFAULT_SECTIONS.unshift(UploadSection);
