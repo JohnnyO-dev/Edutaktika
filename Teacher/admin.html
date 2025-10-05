@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const admin = snap.val();
         if (!admin || admin.role !== "admin") {
             document.getElementById('mainContent').style.display = "none";
-            alert("Access denied.");
+            alert("Access denied. Only admins can access this page.");
             await firebase.auth().signOut();
             window.location.href = "logreg.html";
         } else {
@@ -424,7 +424,65 @@ td:hover .action-btns .reject,
         </div>
     </div>
 
-    <h2 style="text-align:center;">Teacher Account Approvals</h2>
+    <h2 style="text-align:center;">Admin Panel</h2>
+    
+    <!-- Admin Management Section -->
+    <div style="margin: 20px auto; max-width: 800px; background: #f8f9fa; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="color: #2e8b57; margin-bottom: 15px; text-align: center;">Admin Management</h3>
+        <button id="createAdminBtn" style="background: #2e8b57; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 20px;">
+            <i class="fas fa-user-plus"></i> Create New Admin
+        </button>
+        
+        <!-- Create Admin Form (Hidden by default) -->
+        <div id="createAdminForm" style="display: none; background: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+            <h4 style="color: #2e8b57; margin-bottom: 15px;">Create New Admin Account</h4>
+            <form id="adminForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">First Name:</label>
+                        <input type="text" id="adminFname" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Last Name:</label>
+                        <input type="text" id="adminLname" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Email:</label>
+                    <input type="email" id="adminEmail" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Password:</label>
+                    <input type="password" id="adminPassword" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <small style="color: #666; font-size: 12px;">Password must be at least 8 characters with uppercase, lowercase, number, and special character.</small>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" id="cancelAdminBtn" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button type="submit" style="background: #2e8b57; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Create Admin</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Current Admins List -->
+        <div id="adminsList" style="margin-top: 20px;">
+            <h4 style="color: #2e8b57; margin-bottom: 15px;">Current Admins</h4>
+            <table id="adminsTable" style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+                <thead>
+                    <tr style="background: #2e8b57; color: white;">
+                        <th style="padding: 12px; text-align: left;">Name</th>
+                        <th style="padding: 12px; text-align: left;">Email</th>
+                        <th style="padding: 12px; text-align: left;">Created</th>
+                        <th style="padding: 12px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminsTableBody">
+                    <!-- Admin rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h3 style="text-align:center; margin-top: 30px;">Teacher Account Approvals</h3>
     <table id="teachersTable">
         <thead>
             <tr>
@@ -623,7 +681,138 @@ function loadTeachers() {
         document.getElementById('reviewModal').style.display = 'none';
     }
 
+    // Admin Management Functions
+    let currentAdmin = null;
+
+    // Load current admin info
+    function loadCurrentAdmin() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (user) {
+                const uid = user.uid;
+                const snap = await db.ref('admins/' + uid).once('value');
+                const admin = snap.val();
+                if (admin && admin.role === "admin") {
+                    currentAdmin = admin;
+                    currentAdmin.uid = uid;
+                    loadAdmins();
+                }
+            }
+        });
+    }
+
+    // Load all admins
+    function loadAdmins() {
+        db.ref('admins').once('value').then(snapshot => {
+            const tbody = document.querySelector('#adminsTableBody');
+            tbody.innerHTML = '';
+            snapshot.forEach(child => {
+                const admin = child.val();
+                if (admin.role === "admin") {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${(admin.fname || '') + ' ' + (admin.lname || '')}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${admin.email || ''}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${admin.createdAt ? new Date(admin.createdAt).toLocaleDateString() : '—'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                            ${child.key !== currentAdmin.uid ? 
+                                `<button onclick="deleteAdmin('${child.key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>` : 
+                                '<span style="color: #28a745; font-weight: bold;">Current Admin</span>'
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        });
+    }
+
+    // Create new admin
+    async function createAdmin(adminData) {
+        try {
+            // Create user in Firebase Auth
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(adminData.email, adminData.password);
+            const user = userCredential.user;
+            const uid = user.uid;
+
+            // Save admin data in Realtime Database
+            const newAdminData = {
+                fname: adminData.fname,
+                lname: adminData.lname,
+                email: adminData.email,
+                role: "admin",
+                createdAt: new Date().toISOString(),
+                createdBy: currentAdmin.uid
+            };
+
+            await db.ref('admins/' + uid).set(newAdminData);
+
+            // Send verification email
+            try {
+                await user.sendEmailVerification();
+            } catch (err) {
+                console.log("Failed to send verification email: " + err.message);
+            }
+
+            // Sign out the created user (we don't want to stay logged in as them)
+            await firebase.auth().signOut();
+
+            alert('Admin created successfully! Verification email sent.');
+            document.getElementById('adminForm').reset();
+            document.getElementById('createAdminForm').style.display = 'none';
+            loadAdmins();
+
+        } catch (error) {
+            console.error('Error creating admin:', error);
+            alert('Error creating admin: ' + error.message);
+        }
+    }
+
+    // Delete admin
+    function deleteAdmin(adminUid) {
+        if (confirm('Are you sure you want to delete this admin? This action cannot be undone.')) {
+            db.ref('admins/' + adminUid).remove()
+                .then(() => {
+                    alert('Admin deleted successfully.');
+                    loadAdmins();
+                })
+                .catch(err => {
+                    console.error('Error deleting admin:', err);
+                    alert('Error deleting admin: ' + err.message);
+                });
+        }
+    }
+
+    // Event listeners for admin management
+    document.getElementById('createAdminBtn').onclick = function() {
+        document.getElementById('createAdminForm').style.display = 'block';
+    };
+
+    document.getElementById('cancelAdminBtn').onclick = function() {
+        document.getElementById('createAdminForm').style.display = 'none';
+        document.getElementById('adminForm').reset();
+    };
+
+    document.getElementById('adminForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        const fname = document.getElementById('adminFname').value;
+        const lname = document.getElementById('adminLname').value;
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+
+        // Password validation
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!strongPasswordRegex.test(password)) {
+            alert('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+            return;
+        }
+
+        const adminData = { fname, lname, email, password };
+        createAdmin(adminData);
+    };
+
     // Initial load
+    loadCurrentAdmin();
     loadTeachers();
     </script>
     </div>
