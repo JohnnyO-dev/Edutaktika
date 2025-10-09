@@ -1,8 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { isAlive } from 'mobx-state-tree';
 import { SectionTab } from 'polotno/side-panel';
-import { ImagesGrid } from 'polotno/side-panel';
-import { getImageSize } from 'polotno/utils/image';
+// ImagesGrid and getImageSize imports removed - no longer using image backgrounds
 import FaAtom from '@meronex/icons/fa/FaAtom';
 import FaFlask from '@meronex/icons/fa/FaFlask';
 import FaDna from '@meronex/icons/fa/FaDna';
@@ -16,7 +16,8 @@ import { t } from 'polotno/utils/l10n';
 import { TEMPLATE_DATA } from '../../templateData';
 
 // Educational background images and patterns for all subjects
-const EDUCATIONAL_BACKGROUNDS = [
+// EDUCATIONAL_BACKGROUNDS removed - using color-only backgrounds instead
+const EDUCATIONAL_BACKGROUNDS_DISABLED = [
   {
     src: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&h=600&fit=crop',
     preview: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=200&h=150&fit=crop',
@@ -1003,14 +1004,7 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
     { id: 'general', name: 'General', icon: FaBook }
   ];
   
-  const filteredBackgrounds = selectedCategory === 'all' 
-    ? EDUCATIONAL_BACKGROUNDS 
-    : EDUCATIONAL_BACKGROUNDS.filter(bg => {
-        if (selectedCategory === 'science') {
-          return ['chemistry', 'biology', 'physics', 'astronomy', 'earth-science'].includes(bg.category);
-        }
-        return bg.category === selectedCategory;
-      });
+  // Background filtering removed - using color-only backgrounds instead
   
   const filteredTemplates = selectedCategory === 'all' 
     ? EDUCATIONAL_TEMPLATES 
@@ -1023,73 +1017,145 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
 
   const loadMultiPageTemplate = async (templateName) => {
     try {
+      console.log('Loading multi-page template:', templateName);
+      
       // Get template data from embedded data
       const templateData = TEMPLATE_DATA[templateName];
       
       if (!templateData) {
-        throw new Error(`Template ${templateName} not found`);
+        console.error(`Template "${templateName}" not found in TEMPLATE_DATA`);
+        console.log('Available templates:', Object.keys(TEMPLATE_DATA));
+        alert(`Error: Template "${templateName}" not found. Please contact support.`);
+        return;
       }
       
-      // Clear all existing pages
-      store.pages.forEach((page, index) => {
-        if (index > 0) {
-          store.removePage(page);
+      // Clear all existing pages safely
+      try {
+        // First, clear all elements from all pages
+        const pages = [...store.pages];
+        pages.forEach((page, index) => {
+          try {
+            if (page && isAlive(page) && page.children) {
+              const children = [...page.children];
+              children.forEach(child => {
+                try {
+                  if (child && isAlive(child) && page.hasChild && page.hasChild(child.id)) {
+                    page.removeChild(child);
+                  }
+                } catch (e) {
+                  console.warn('Could not remove child:', e);
+                }
+              });
+            }
+          } catch (e) {
+            console.warn('Could not clear page children:', e);
+          }
+        });
+
+        // Then remove all pages except the first one
+        const pagesToRemove = [...store.pages];
+        for (let i = pagesToRemove.length - 1; i > 0; i--) {
+          try {
+            const page = pagesToRemove[i];
+            if (page && isAlive(page) && page.id) {
+              store.removePage(page.id);
+            }
+          } catch (e) {
+            console.warn('Could not remove page:', e);
+          }
         }
-      });
+      } catch (e) {
+        console.warn('Error during page cleanup:', e);
+      }
+
+      // Small delay to ensure cleanup completes
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Load the template data
       store.loadJSON(templateData);
+      
+      console.log('Multi-page template loaded successfully');
     } catch (error) {
       console.error('Error loading template:', error);
-      alert('Error loading template. Please try again.');
+      alert(`Error loading template: ${error.message}`);
     }
   };
 
   const applyTemplate = (template) => {
-    // Check if this is a multi-page template
-    if (template.isMultiPage) {
-      loadMultiPageTemplate(template.fileName);
-      return;
-    }
+    try {
+      console.log('Applying template:', template.id, template.name);
+      
+      // Check if this is a multi-page template
+      if (template.isMultiPage) {
+        loadMultiPageTemplate(template.fileName);
+        return;
+      }
 
-    // Clear current page
-    store.activePage?.children.forEach(child => {
-      store.activePage?.removeChild(child);
-    });
+      // Validate single-page template has elements
+      if (!template.elements || !Array.isArray(template.elements)) {
+        console.error(`Template "${template.id}" has no elements array`);
+        alert(`Error: Template "${template.name}" is not properly configured.`);
+        return;
+      }
 
-    // Add template elements
-    template.elements.forEach(element => {
-      if (element.type === 'text') {
-        const textElement = store.activePage?.addElement({
-          type: 'text',
-          text: element.text,
-          fontSize: element.fontSize,
-          fontWeight: element.fontWeight,
-          x: element.x,
-          y: element.y,
-          fill: element.fill
-        });
-      } else if (element.type === 'rect') {
-        const rectElement = store.activePage?.addElement({
-          type: 'rect',
-          x: element.x,
-          y: element.y,
-          width: element.width,
-          height: element.height,
-          fill: element.fill,
-          stroke: element.stroke,
-          strokeWidth: element.strokeWidth
-        });
-      } else if (element.type === 'circle') {
-        const circleElement = store.activePage?.addElement({
-          type: 'circle',
-          x: element.x,
-          y: element.y,
-          radius: element.radius,
-          fill: element.fill
+      // Clear current page safely
+      const activePage = store.activePage;
+      if (activePage && isAlive(activePage) && activePage.children) {
+        const childrenToRemove = [...activePage.children];
+        childrenToRemove.forEach(child => {
+          try {
+            if (child && isAlive(child) && child.id && activePage.hasChild && activePage.hasChild(child.id)) {
+              activePage.removeChild(child);
+            }
+          } catch (e) {
+            console.warn('Could not remove child:', e);
+          }
         });
       }
-    });
+
+      // Add template elements
+      template.elements.forEach(element => {
+        try {
+          if (element.type === 'text') {
+            store.activePage?.addElement({
+              type: 'text',
+              text: element.text,
+              fontSize: element.fontSize,
+              fontWeight: element.fontWeight || 'normal',
+              x: element.x,
+              y: element.y,
+              fill: element.fill
+            });
+          } else if (element.type === 'rect') {
+            store.activePage?.addElement({
+              type: 'rect',
+              x: element.x,
+              y: element.y,
+              width: element.width,
+              height: element.height,
+              fill: element.fill,
+              stroke: element.stroke,
+              strokeWidth: element.strokeWidth
+            });
+          } else if (element.type === 'circle') {
+            store.activePage?.addElement({
+              type: 'circle',
+              x: element.x,
+              y: element.y,
+              radius: element.radius,
+              fill: element.fill
+            });
+          }
+        } catch (elementError) {
+          console.warn('Could not add element:', element, elementError);
+        }
+      });
+      
+      console.log('Template applied successfully');
+    } catch (error) {
+      console.error('Error applying template:', error);
+      alert(`Error applying template "${template.name}": ${error.message}`);
+    }
   };
 
   return (
@@ -1129,7 +1195,7 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
       </div>
 
       {/* Templates Section */}
-      <div style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '10px' }}>
         <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#2c3e50' }}>
           Quick Templates ({filteredTemplates.length})
         </h4>
@@ -1182,28 +1248,7 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
         </div>
       </div>
 
-      {/* Backgrounds Section */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
-        <h4 style={{ margin: '10px', fontSize: '14px', color: '#2c3e50' }}>
-          Science Backgrounds
-        </h4>
-        <ImagesGrid
-          images={filteredBackgrounds}
-          getPreview={(image) => image.preview}
-          crossOrigin="anonymous"
-          onSelect={async (item, pos, element) => {
-            const image = item.src;
-            let { width, height } = await getImageSize(image);
-
-            // Set as background for the current page
-            store.activePage?.set({
-              backgroundImage: image,
-              backgroundImageWidth: width,
-              backgroundImageHeight: height,
-            });
-          }}
-        />
-      </div>
+      {/* Backgrounds Section Removed - Using color-only backgrounds instead */}
     </div>
   );
 });
