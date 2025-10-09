@@ -92,24 +92,32 @@
         .attribute-item {
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
             margin-bottom: 15px;
-            padding: 15px;
-            background: #f8f9fa;
+            padding: 20px;
+            background: white;
             border-radius: 12px;
-            border-left: 4px solid var(--accent);
+            border-left: 4px solid #e91e63;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
 
         .attribute-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .attribute-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
         }
 
         .attribute-name {
-            flex: 1;
             font-weight: 600;
             color: var(--text-main);
+            min-width: 120px;
         }
 
         .attribute-input {
@@ -121,7 +129,7 @@
         .percentage-input {
             width: 80px;
             padding: 8px 12px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #ff9800;
             border-radius: 8px;
             text-align: center;
             font-weight: 600;
@@ -131,7 +139,7 @@
 
         .percentage-input:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: #f57c00;
         }
 
         .percentage-input.error {
@@ -188,11 +196,10 @@
             transform: scale(1.1);
         }
 
-        .attribute-name {
+        .attribute-actions {
             display: flex;
             align-items: center;
-            gap: 5px;
-            flex: 1;
+            gap: 8px;
         }
 
         .attribute-name.editing {
@@ -1898,39 +1905,42 @@
                 const maxAllowed = 100 - otherTotal;
                 
                 item.innerHTML = `
-                    <div class="attribute-name" id="attr-name-${index}">
-                        ${attr.name}
-                        <div class="attribute-actions">
-                            <button class="edit-btn" onclick="editAttributeName(${index})" title="Edit attribute name">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="remove-btn" onclick="removeAttributeByName('${attr.name}')" title="Remove attribute">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    <div class="attribute-content">
+                        <div class="attribute-name" id="attr-name-${index}">
+                            ${attr.name}
+                        </div>
+                        <input type="text" 
+                               class="attribute-name-input" 
+                               id="attr-input-${index}"
+                               value="${attr.name}"
+                               maxlength="50"
+                               onblur="saveAttributeName(${index})"
+                               onkeypress="handleAttributeNameKeypress(event, ${index})"
+                               style="display: none;">
+                        <div class="attribute-input">
+                            <input type="number" 
+                                   class="percentage-input" 
+                                   value="${attr.percentage}" 
+                                   min="0" 
+                                   max="${maxAllowed}" 
+                                   data-index="${index}"
+                                   data-max-allowed="${maxAllowed}"
+                                   onchange="updatePercentage(${index}, this.value)"
+                                   oninput="showMaxAllowed(${index}, this)"
+                                   title="Maximum allowed: ${maxAllowed}%">
+                            <span>%</span>
+                            <span class="max-indicator" id="max-${index}" style="font-size: 0.8rem; color: var(--text-light); margin-left: 5px;">
+                                ${maxAllowed < 100 ? `(max: ${maxAllowed}%)` : ''}
+                            </span>
                         </div>
                     </div>
-                    <input type="text" 
-                           class="attribute-name-input" 
-                           id="attr-input-${index}"
-                           value="${attr.name}"
-                           maxlength="50"
-                           onblur="saveAttributeName(${index})"
-                           onkeypress="handleAttributeNameKeypress(event, ${index})">
-                    <div class="attribute-input">
-                        <input type="number" 
-                               class="percentage-input" 
-                               value="${attr.percentage}" 
-                               min="0" 
-                               max="${maxAllowed}" 
-                               data-index="${index}"
-                               data-max-allowed="${maxAllowed}"
-                               onchange="updatePercentage(${index}, this.value)"
-                               oninput="showMaxAllowed(${index}, this)"
-                               title="Maximum allowed: ${maxAllowed}%">
-                        <span>%</span>
-                        <span class="max-indicator" id="max-${index}" style="font-size: 0.8rem; color: var(--text-light); margin-left: 5px;">
-                            ${maxAllowed < 100 ? `(max: ${maxAllowed}%)` : ''}
-                        </span>
+                    <div class="attribute-actions">
+                        <button class="edit-btn" onclick="editAttributeName(${index})" title="Edit attribute name">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="remove-btn" onclick="removeAttributeByName('${attr.name}')" title="Remove attribute">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 `;
                 item.setAttribute('data-index', index);

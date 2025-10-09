@@ -13,6 +13,7 @@ import FaCalculator from '@meronex/icons/fa/FaCalculator';
 import FaLanguage from '@meronex/icons/fa/FaLanguage';
 import FaMicroscope from '@meronex/icons/fa/FaMicroscope';
 import { t } from 'polotno/utils/l10n';
+import { TEMPLATE_DATA } from '../../templateData';
 
 // Educational background images and patterns for all subjects
 const EDUCATIONAL_BACKGROUNDS = [
@@ -926,6 +927,67 @@ const EDUCATIONAL_TEMPLATES = [
         fill: '#34495e'
       }
     ]
+  },
+  // Multi-page templates from assets/templates/
+  {
+    id: 'science-lesson-multipage',
+    name: 'Science Lesson (Multi-page)',
+    preview: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaFlask,
+    isMultiPage: true,
+    fileName: 'science-lesson',
+    description: 'Complete science lesson with cover, objectives, content, and summary'
+  },
+  {
+    id: 'math-lesson-multipage',
+    name: 'Math Lesson (Multi-page)',
+    preview: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=150&fit=crop',
+    category: 'math',
+    icon: FaCalculator,
+    isMultiPage: true,
+    fileName: 'math-lesson',
+    description: 'Math lesson with formulas, examples, and practice problems'
+  },
+  {
+    id: 'english-essay-multipage',
+    name: 'English Essay (Multi-page)',
+    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-essay',
+    description: 'Complete essay structure with introduction, body, and conclusion'
+  },
+  {
+    id: 'book-report-multipage',
+    name: 'Book Report (Multi-page)',
+    preview: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'book-report',
+    description: 'Book report template with summary, characters, and opinion'
+  },
+  {
+    id: 'quiz-assessment-multipage',
+    name: 'Quiz & Assessment (Multi-page)',
+    preview: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=200&h=150&fit=crop',
+    category: 'assessment',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'quiz-assessment',
+    description: 'Quiz template with cover page and question format'
+  },
+  {
+    id: 'blank-presentation-multipage',
+    name: 'Blank Presentation (Multi-page)',
+    preview: 'https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?w=200&h=150&fit=crop',
+    category: 'general',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'blank-presentation',
+    description: 'Clean starter template for any subject'
   }
 ];
 
@@ -936,7 +998,9 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
     { id: 'all', name: 'All', icon: FaAtom },
     { id: 'english', name: 'English', icon: FaBook },
     { id: 'science', name: 'Science', icon: FaMicroscope },
-    { id: 'math', name: 'Math', icon: FaCalculator }
+    { id: 'math', name: 'Math', icon: FaCalculator },
+    { id: 'assessment', name: 'Assessment', icon: FaBook },
+    { id: 'general', name: 'General', icon: FaBook }
   ];
   
   const filteredBackgrounds = selectedCategory === 'all' 
@@ -952,12 +1016,42 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
     ? EDUCATIONAL_TEMPLATES 
     : EDUCATIONAL_TEMPLATES.filter(template => {
         if (selectedCategory === 'science') {
-          return ['chemistry', 'biology', 'physics', 'astronomy', 'earth-science', 'general'].includes(template.category);
+          return ['chemistry', 'biology', 'physics', 'astronomy', 'earth-science', 'science'].includes(template.category);
         }
         return template.category === selectedCategory;
       });
 
+  const loadMultiPageTemplate = async (templateName) => {
+    try {
+      // Get template data from embedded data
+      const templateData = TEMPLATE_DATA[templateName];
+      
+      if (!templateData) {
+        throw new Error(`Template ${templateName} not found`);
+      }
+      
+      // Clear all existing pages
+      store.pages.forEach((page, index) => {
+        if (index > 0) {
+          store.removePage(page);
+        }
+      });
+
+      // Load the template data
+      store.loadJSON(templateData);
+    } catch (error) {
+      console.error('Error loading template:', error);
+      alert('Error loading template. Please try again.');
+    }
+  };
+
   const applyTemplate = (template) => {
+    // Check if this is a multi-page template
+    if (template.isMultiPage) {
+      loadMultiPageTemplate(template.fileName);
+      return;
+    }
+
     // Clear current page
     store.activePage?.children.forEach(child => {
       store.activePage?.removeChild(child);
@@ -1077,6 +1171,11 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
                 <div style={{ marginTop: '4px', color: '#2c3e50', fontWeight: '500', lineHeight: '1.2' }}>
                   {template.name}
                 </div>
+                {template.description && (
+                  <div style={{ marginTop: '2px', color: '#7f8c8d', fontSize: '8px', lineHeight: '1.1' }}>
+                    {template.description}
+                  </div>
+                )}
               </div>
             );
           })}
