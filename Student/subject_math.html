@@ -286,10 +286,14 @@
         </div>
 
         <div class="quarter-section active" id="quarter-1">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 1: <span class="bounce-word"><span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
-</h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">Quarter 1: <span class="bounce-word"><span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span></span></h2>
+                </div>
+                <button class="create-lesson-btn" onclick="createNewLesson('subject_math', 1)" style="background: #2e8b57; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus"></i> Create Lesson
+                </button>
             </div>
             <div class="lessons-container">
 
@@ -306,32 +310,46 @@
             </div>
         </div>
         <div class="quarter-section" id="quarter-2">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 2: <span class="bounce-word"><span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
-</h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">Quarter 2: <span class="bounce-word"><span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span></span></h2>
+                </div>
+                <button class="create-lesson-btn" onclick="createNewLesson('subject_math', 2)" style="background: #2e8b57; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus"></i> Create Lesson
+                </button>
             </div>
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-3">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 3: 
-                    <span class="bounce-word">
-                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
-                    </span>
-                </h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">Quarter 3: 
+                        <span class="bounce-word">
+                            <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+                        </span>
+                    </h2>
+                </div>
+                <button class="create-lesson-btn" onclick="createNewLesson('subject_math', 3)" style="background: #2e8b57; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus"></i> Create Lesson
+                </button>
             </div>
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-4">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 4: 
-                    <span class="bounce-word">
-                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
-                    </span>
-                </h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">Quarter 4: 
+                        <span class="bounce-word">
+                            <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+                        </span>
+                    </h2>
+                </div>
+                <button class="create-lesson-btn" onclick="createNewLesson('subject_math', 4)" style="background: #2e8b57; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus"></i> Create Lesson
+                </button>
             </div>
             <div class="lessons-container"></div>
         </div>
@@ -922,6 +940,51 @@ auth.onAuthStateChanged(async function(user) {
         });
     });
 })();
+
+// Function to create a new lesson
+function createNewLesson(subject, quarter) {
+    // Get current user info
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user) {
+            alert('Please log in to create lessons.');
+            return;
+        }
+        
+        // Get student info to find teacher
+        const studentSnap = await firebase.database().ref('students/' + user.uid).once('value');
+        const student = studentSnap.val();
+        
+        if (!student || !student.section) {
+            alert('Student information not found.');
+            return;
+        }
+        
+        // Find teacher for this section
+        let teacherUID = null;
+        const teachersSnap = await firebase.database().ref('teachers').once('value');
+        teachersSnap.forEach(tsnap => {
+            const t = tsnap.val();
+            if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+                teacherUID = tsnap.key;
+            }
+        });
+        
+        if (!teacherUID) {
+            alert('No teacher found for your section.');
+            return;
+        }
+        
+        // Prompt for lesson name and description
+        const lessonName = prompt('Enter lesson name:');
+        if (!lessonName) return;
+        
+        const description = prompt('Enter lesson description (optional):') || '';
+        
+        // Navigate to editor with parameters
+        const editorUrl = `../Editor/index.html?subject=${subject}&quarter=${quarter}&teacherUID=${teacherUID}&section=${encodeURIComponent(student.section)}&lessonName=${encodeURIComponent(lessonName)}&description=${encodeURIComponent(description)}`;
+        window.open(editorUrl, '_blank');
+    });
+}
 
 </script>
     </div>
